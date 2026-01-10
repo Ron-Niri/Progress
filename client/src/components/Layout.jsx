@@ -16,6 +16,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import Logo from './Logo';
 
 export default function Layout({ children }) {
   const { logout } = useAuth();
@@ -38,7 +39,7 @@ export default function Layout({ children }) {
       {/* Sidebar for Desktop */}
       <aside className="w-72 bg-white dark:bg-dark-surface border-r border-gray-100 dark:border-gray-700 hidden lg:flex flex-col transition-colors">
         <div className="p-8">
-          <h1 className="text-3xl font-heading font-black text-primary dark:text-dark-primary tracking-tighter">Progress<span className="text-action">.</span></h1>
+          <Logo />
         </div>
         
         <nav className="flex-1 px-6 space-y-2">
@@ -87,7 +88,7 @@ export default function Layout({ children }) {
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Mobile Mini Header */}
         <div className="lg:hidden sticky top-0 z-40 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 p-4 flex items-center justify-between">
-            <h1 className="text-xl font-heading font-black text-primary dark:text-dark-primary tracking-tighter">Progress<span className="text-action">.</span></h1>
+            <Logo className="scale-90 origin-left" />
             <div className="flex items-center gap-2">
               <button 
                 onClick={toggleDarkMode}
