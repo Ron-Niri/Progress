@@ -2,6 +2,7 @@ import express from 'express';
 import HabitTemplate from '../models/HabitTemplate.js';
 import Habit from '../models/Habit.js';
 import Achievement from '../models/Achievement.js';
+import Activity from '../models/Activity.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
@@ -110,18 +111,41 @@ router.post('/', auth, async (req, res) => {
     });
     const habit = await newHabit.save();
     
-    // Check for first habit achievement
+    // Check for habit count achievements
     const habitCount = await Habit.countDocuments({ userId: req.user.id });
+    
+    let achievementData = null;
     if (habitCount === 1) {
+      achievementData = { type: 'first_habit', title: 'First Step', icon: '🎯', description: 'Created your first habit!' };
+    } else if (habitCount === 3) {
+      achievementData = { type: 'three_habits', title: 'Ritual Builder', icon: '🧘', description: 'Established 3 daily rituals!' };
+    } else if (habitCount === 5) {
+      achievementData = { type: 'five_habits', title: 'Routine Architect', icon: '🏗️', description: 'Designed a life of structure with 5 habits!' };
+    }
+
+    if (achievementData) {
       const achievement = new Achievement({
         userId: req.user.id,
-        type: 'first_habit',
-        title: 'First Step',
-        description: 'Created your first habit!',
-        icon: '🎯'
+        ...achievementData
       });
       await achievement.save();
+
+      await new Activity({
+        userId: req.user.id,
+        type: 'achievement_unlocked',
+        title: achievement.title,
+        description: `Unlocked: ${achievement.title} - ${achievement.description}`,
+        metadata: { referenceId: achievement._id, icon: achievement.icon }
+      }).save();
     }
+
+    await new Activity({
+      userId: req.user.id,
+      type: 'habit_completed',
+      title: habit.title,
+      description: `Started the ${habit.title} ritual.`,
+      metadata: { referenceId: habit._id, icon: habit.icon }
+    }).save();
     
     res.json(habit);
   } catch (err) {
@@ -198,6 +222,14 @@ router.put('/:id/check', auth, async (req, res) => {
                     icon: '🔥'
                 });
                 await achievement.save();
+                
+                await new Activity({
+                    userId: req.user.id,
+                    type: 'achievement_unlocked',
+                    title: 'Week Warrior',
+                    description: 'Became a Week Warrior with a 7-day streak!',
+                    metadata: { referenceId: achievement._id, icon: '🔥' }
+                }).save();
             } else if (habit.streak === 30) {
                 const achievement = new Achievement({
                     userId: req.user.id,
@@ -207,7 +239,23 @@ router.put('/:id/check', auth, async (req, res) => {
                     icon: '⭐'
                 });
                 await achievement.save();
+
+                await new Activity({
+                    userId: req.user.id,
+                    type: 'achievement_unlocked',
+                    title: 'Month Master',
+                    description: 'Mastered consistency for 30 full days!',
+                    metadata: { referenceId: achievement._id, icon: '⭐' }
+                }).save();
             }
+
+            await new Activity({
+                userId: req.user.id,
+                type: 'habit_completed',
+                title: habit.title,
+                description: `Successfully completed: ${habit.title}`,
+                metadata: { referenceId: habit._id, icon: habit.icon, value: habit.streak }
+            }).save();
         }
 
         await habit.save();

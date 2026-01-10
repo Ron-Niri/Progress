@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Habit from '../models/Habit.js';
 import Goal from '../models/Goal.js';
 import Achievement from '../models/Achievement.js';
+import Activity from '../models/Activity.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
@@ -191,6 +192,22 @@ router.get('/search/users', auth, async (req, res) => {
     .limit(20);
 
     res.json(users);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/profile/:userId/activity
+// @desc    Get user activity feed
+// @access  Private
+router.get('/:userId/activity', auth, async (req, res) => {
+  try {
+    const id = req.params.userId === 'me' ? req.user.id : req.params.userId;
+    const activities = await Activity.find({ userId: id })
+      .sort({ createdAt: -1 })
+      .limit(20);
+    res.json(activities);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
