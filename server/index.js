@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import habitRoutes from './routes/habits.js';
 import goalRoutes from './routes/goals.js';
 import journalRoutes from './routes/journal.js';
+import statsRoutes from './routes/stats.js';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/journal', journalRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Progress API is running', status: 'OK' });

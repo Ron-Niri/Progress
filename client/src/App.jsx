@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Habits from './pages/Habits';
 import Goals from './pages/Goals';
 import Journal from './pages/Journal';
 import Analytics from './pages/Analytics';
@@ -34,7 +35,7 @@ function App() {
           
           <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/habits" element={<Dashboard />} /> {/* Reusing Dashboard for Habits for now */}
+              <Route path="/habits" element={<Habits />} />
               <Route path="/goals" element={<Goals />} />
               <Route path="/journal" element={<Journal />} />
               <Route path="/analytics" element={<Analytics />} />

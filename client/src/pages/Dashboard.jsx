@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import HabitCard from '../components/HabitCard';
-import { Plus } from 'lucide-react';
+import { Plus, TrendingUp, Target as TargetIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const [habits, setHabits] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [newHabit, setNewHabit] = useState({ title: '', description: '', frequency: 'daily' });
@@ -19,13 +21,19 @@ export default function Dashboard() {
         navigate('/login');
         return;
     }
-    fetchHabits();
+    fetchData();
   }, [user]);
 
-  const fetchHabits = async () => {
+  const fetchData = async () => {
     try {
-      const res = await api.get('/habits');
-      setHabits(res.data);
+      const [habitsRes, goalsRes, statsRes] = await Promise.all([
+        api.get('/habits'),
+        api.get('/goals'),
+        api.get('/stats')
+      ]);
+      setHabits(habitsRes.data);
+      setGoals(goalsRes.data.filter(g => g.status !== 'completed').slice(0, 3));
+      setStats(statsRes.data);
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -39,7 +47,7 @@ export default function Dashboard() {
       await api.post('/habits', newHabit);
       setNewHabit({ title: '', description: '', frequency: 'daily' });
       setShowForm(false);
-      fetchHabits();
+      fetchData();
     } catch (err) {
       console.error(err);
     }
@@ -48,24 +56,33 @@ export default function Dashboard() {
   const handleCheckHabit = async (id) => {
     try {
       await api.put(`/habits/${id}/check`);
-      fetchHabits();
+      fetchData();
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="text-secondary">Loading your progress...</div></div>;
+
+  const quotes = [
+    { text: "Success is the sum of small efforts, repeated day in and day out.", author: "Robert Collier" },
+    { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+    { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+    { text: "Progress, not perfection.", author: "Unknown" }
+  ];
+  
+  const todayQuote = quotes[new Date().getDate() % quotes.length];
 
   return (
     <div className="space-y-6">
        <div className="flex items-center justify-between">
         <div>
            <h2 className="text-2xl font-heading font-semibold text-primary">Dashboard</h2>
-           <p className="text-secondary">Overview of your progress today.</p>
+           <p className="text-secondary">Welcome back! Here's your progress today.</p>
         </div>
         <button 
            onClick={() => setShowForm(!showForm)}
-           className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium flex items-center gap-2"
+           className="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium flex items-center gap-2 hover:bg-slate-800 transition-colors"
         >
           <Plus size={16} /> New Habit
         </button>
@@ -86,51 +103,127 @@ export default function Dashboard() {
                   onChange={e => setNewHabit({...newHabit, title: e.target.value})}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-primary mb-1">Description (Optional)</label>
+                <input 
+                  type="text" 
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-action focus:ring-action sm:text-sm py-2 px-3 border"
+                  placeholder="Why is this important?"
+                  value={newHabit.description}
+                  onChange={e => setNewHabit({...newHabit, description: e.target.value})}
+                />
+              </div>
               <div className="flex gap-3">
-                <button type="submit" className="px-4 py-2 bg-action text-white rounded-md text-sm font-medium">Save Habit</button>
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-surface text-primary rounded-md text-sm font-medium">Cancel</button>
+                <button type="submit" className="px-4 py-2 bg-action text-white rounded-md text-sm font-medium hover:bg-blue-600">Save Habit</button>
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-surface text-primary rounded-md text-sm font-medium hover:bg-gray-200">Cancel</button>
               </div>
             </form>
           </div>
         )}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* Stats Overview */}
+      {stats && (
+        <div className="grid gap-4 md:grid-cols-4">
+          <div className="p-4 bg-white rounded-lg border border-gray-100 shadow-soft">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-secondary uppercase tracking-wider">Completion Rate</p>
+                <p className="text-2xl font-bold text-primary mt-1">{stats.habits.completionRate}%</p>
+              </div>
+              <TrendingUp className="text-accent" size={24} />
+            </div>
+          </div>
+          <div className="p-4 bg-white rounded-lg border border-gray-100 shadow-soft">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-secondary uppercase tracking-wider">Active Streaks</p>
+                <p className="text-2xl font-bold text-primary mt-1">{stats.habits.activeStreaks}</p>
+              </div>
+              <div className="text-action text-2xl">🔥</div>
+            </div>
+          </div>
+          <div className="p-4 bg-white rounded-lg border border-gray-100 shadow-soft">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-secondary uppercase tracking-wider">Longest Streak</p>
+                <p className="text-2xl font-bold text-primary mt-1">{stats.habits.longestStreak}</p>
+              </div>
+              <div className="text-accent text-2xl">⭐</div>
+            </div>
+          </div>
+          <div className="p-4 bg-white rounded-lg border border-gray-100 shadow-soft">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-secondary uppercase tracking-wider">Goals Active</p>
+                <p className="text-2xl font-bold text-primary mt-1">{stats.goals.inProgress}</p>
+              </div>
+              <TargetIcon className="text-action" size={24} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-3">
           {/* Today's Habits Section */}
-          <div className="space-y-4">
-              <h3 className="text-lg font-medium text-primary">Today's Habits</h3>
+          <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-primary">Today's Habits</h3>
+                  <span className="text-sm text-secondary">{habits.length} total</span>
+              </div>
               {habits.length === 0 ? (
                 <div className="text-center py-10 bg-surface/30 rounded-lg border border-dashed border-gray-200">
-                    <p className="text-secondary">No habits yet.</p>
+                    <p className="text-secondary mb-2">No habits yet.</p>
+                    <button onClick={() => setShowForm(true)} className="text-action font-medium hover:underline">Create your first habit</button>
                 </div>
               ) : (
                 <div className="space-y-3">
-                    {habits.map(habit => (
-                    <HabitCard key={habit._id} habit={habit} onCheck={handleCheckHabit} />
+                    {habits.slice(0, 5).map(habit => (
+                      <HabitCard key={habit._id} habit={habit} onCheck={handleCheckHabit} />
                     ))}
+                    {habits.length > 5 && (
+                      <button 
+                        onClick={() => navigate('/habits')}
+                        className="w-full py-2 text-sm text-action hover:text-blue-600 font-medium"
+                      >
+                        View all {habits.length} habits →
+                      </button>
+                    )}
                 </div>
               )}
           </div>
 
-          {/* Quick Summary Widget */}
+          {/* Sidebar */}
           <div className="space-y-4">
-              <h3 className="text-lg font-medium text-primary">At a Glance</h3>
-              <div className="p-6 bg-white rounded-lg border border-gray-100 shadow-soft">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                      <div>
-                          <div className="text-3xl font-bold text-primary">{habits.filter(h => h.streak > 0).length}</div>
-                          <div className="text-xs text-secondary uppercase tracking-wider mt-1">Active Streaks</div>
-                      </div>
-                      <div>
-                          <div className="text-3xl font-bold text-accent">85%</div>
-                          <div className="text-xs text-secondary uppercase tracking-wider mt-1">Completion Rate</div>
-                      </div>
-                  </div>
+              {/* Daily Quote */}
+              <div className="p-6 bg-gradient-to-br from-primary to-slate-900 rounded-lg shadow-soft text-white">
+                  <h4 className="font-heading font-semibold text-sm uppercase tracking-wider mb-3 opacity-80">Daily Inspiration</h4>
+                  <p className="text-gray-100 italic leading-relaxed mb-3">"{todayQuote.text}"</p>
+                  <p className="text-right text-sm text-gray-400">— {todayQuote.author}</p>
               </div>
 
-               <div className="p-6 bg-gradient-to-br from-primary to-slate-900 rounded-lg shadow-soft text-white">
-                  <h4 className="font-heading font-semibold text-lg mb-2">Daily Quote</h4>
-                  <p className="text-gray-300 italic">"Success is the sum of small efforts, repeated day in and day out."</p>
-                  <p className="text-right text-sm text-gray-400 mt-2">- Robert Collier</p>
+              {/* Upcoming Goals */}
+              <div className="p-6 bg-white rounded-lg border border-gray-100 shadow-soft">
+                  <h4 className="font-medium text-primary mb-3">Active Goals</h4>
+                  {goals.length === 0 ? (
+                    <p className="text-sm text-secondary">No active goals. <button onClick={() => navigate('/goals')} className="text-action hover:underline">Set one now</button></p>
+                  ) : (
+                    <div className="space-y-3">
+                      {goals.map(goal => (
+                        <div key={goal._id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                          <p className="text-sm font-medium text-primary mb-1">{goal.title}</p>
+                          <div className="w-full bg-gray-100 rounded-full h-1.5">
+                            <div className="bg-action h-1.5 rounded-full" style={{ width: `${goal.progress}%` }}></div>
+                          </div>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => navigate('/goals')}
+                        className="text-sm text-action hover:text-blue-600 font-medium"
+                      >
+                        View all goals →
+                      </button>
+                    </div>
+                  )}
               </div>
           </div>
       </div>
