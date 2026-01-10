@@ -12,10 +12,13 @@ import statsRoutes from './routes/stats.js';
 import profileRoutes from './routes/profile.js';
 import achievementsRoutes from './routes/achievements.js';
 
-dotenv.config({ path: '../.env' });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
-const PORT = process.env.SERVER_PORT || 5000;
+const PORT = process.env.PORT || process.env.SERVER_PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -32,10 +35,6 @@ app.use('/api/achievements', achievementsRoutes);
 app.get('/api', (req, res) => {
   res.json({ message: 'Progress API is running', status: 'OK' });
 });
-
-// Serve Static Files in Production
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/dist')));
