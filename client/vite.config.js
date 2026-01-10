@@ -14,7 +14,9 @@ export default defineConfig(({ mode }) => {
       port: parseInt(env.PORT) || 5173
     },
     define: {
-      'import.meta.env.VITE_API_URL': JSON.stringify(`http://localhost:${serverPort}/api`)
+      'import.meta.env.VITE_API_URL': mode === 'production' 
+        ? JSON.stringify('/api') 
+        : JSON.stringify(`http://localhost:${serverPort}/api`)
     }
   }
 })

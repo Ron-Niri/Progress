@@ -2,6 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import habitRoutes from './routes/habits.js';
 import goalRoutes from './routes/goals.js';
@@ -27,9 +29,24 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/achievements', achievementsRoutes);
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.json({ message: 'Progress API is running', status: 'OK' });
 });
+
+// Serve Static Files in Production
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  
+  app.get('*', (req, res) => {
+    // Only serve index.html if it's not an API route
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+    }
+  });
+}
 
 // Database Connection
 const connectDB = async () => {
