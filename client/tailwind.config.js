@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -13,6 +14,13 @@ export default {
         secondary: '#6B7280',  // Mist Grey
         accent: '#10B981',     // Growth Sage
         action: '#3B82F6',     // Ascent Blue
+        // Dark mode colors
+        dark: {
+          background: '#0F1117',
+          surface: '#1E293B',
+          primary: '#F8FAFC',
+          secondary: '#94A3B8',
+        }
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
@@ -20,6 +28,7 @@ export default {
       },
       boxShadow: {
         'soft': '0 1px 3px rgba(0,0,0,0.05)',
+        'soft-dark': '0 1px 3px rgba(0,0,0,0.3)',
       }
     },
   },

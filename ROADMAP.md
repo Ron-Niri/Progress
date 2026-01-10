@@ -8,6 +8,9 @@
 - [x] Password hashing with bcrypt
 - [x] Protected routes and middleware
 - [x] Persistent authentication state
+- [x] 2FA email verification
+- [x] Password reset with email codes
+- [x] Rich HTML email templates
 
 ### Habit Tracking
 - [x] Create daily and weekly habits
@@ -52,12 +55,12 @@
 ## 🚧 Planned Features (v1.1 - v2.0)
 
 ### Enhanced Habit Features
-- [ ] Habit templates (pre-built popular habits)
-- [ ] Custom habit icons/colors
-- [ ] Habit reminders/notifications
-- [ ] Habit notes (daily reflections per habit)
-- [ ] Habit categories/tags
-- [ ] Habit sharing with friends
+- [x] Habit templates (pre-built popular habits)
+- [x] Custom habit icons/colors
+- [x] Habit reminders/notifications
+- [x] Habit notes (daily reflections per habit)
+- [x] Habit categories/tags
+- [x] Habit sharing with friends
 - [ ] Habit history calendar view
 
 ### Advanced Goal System
@@ -70,19 +73,19 @@
 - [ ] Goal attachments (images, files)
 
 ### Social & Community
-- [ ] User profiles
-- [ ] Follow other users
-- [ ] Share achievements
-- [ ] Leaderboards
+- [x] User profiles
+- [x] Follow other users
+- [x] Share achievements
+- [x] Leaderboards
 - [ ] Community challenges
 - [ ] Accountability partners
 
 ### Gamification
-- [ ] Achievement badges
+- [x] Achievement badges
 - [ ] Experience points (XP) system
 - [ ] Level progression
 - [ ] Reward unlocks
-- [ ] Streak milestones
+- [x] Streak milestones
 - [ ] Daily/weekly challenges
 
 ### Advanced Analytics
@@ -104,7 +107,7 @@
 
 ### Personalization
 - [ ] Custom themes
-- [ ] Dark mode
+- [x] Dark mode
 - [ ] Custom dashboard widgets
 - [ ] Personalized recommendations
 - [ ] AI-powered habit suggestions
@@ -128,7 +131,7 @@
 - [ ] CDN for static assets
 
 ### Security
-- [ ] Two-factor authentication (2FA)
+- [x] Two-factor authentication (2FA)
 - [ ] OAuth integration (Google, GitHub)
 - [ ] Rate limiting
 - [ ] Input sanitization

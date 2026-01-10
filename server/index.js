@@ -7,8 +7,10 @@ import habitRoutes from './routes/habits.js';
 import goalRoutes from './routes/goals.js';
 import journalRoutes from './routes/journal.js';
 import statsRoutes from './routes/stats.js';
+import profileRoutes from './routes/profile.js';
+import achievementsRoutes from './routes/achievements.js';
 
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,6 +24,8 @@ app.use('/api/habits', habitRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/journal', journalRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/achievements', achievementsRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Progress API is running', status: 'OK' });
@@ -29,11 +33,18 @@ app.get('/', (req, res) => {
 
 // Database Connection
 const connectDB = async () => {
+    console.log('🔌 Attempting to connect to MongoDB...');
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+        console.error('❌ MONGODB_URI is not defined in .env file');
+        return;
+    }
+    console.log('📝 Using URI:', uri.split('@').pop()); // Log only the host part for security
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('MongoDB Connected Successfully');
+        await mongoose.connect(uri);
+        console.log('✅ MongoDB Connected Successfully');
     } catch (err) {
-        console.error('MongoDB Connection Error:', err.message);
+        console.error('❌ MongoDB Connection Error:', err.message);
     }
 };
 

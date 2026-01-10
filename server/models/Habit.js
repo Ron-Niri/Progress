@@ -7,6 +7,19 @@ const HabitSchema = new mongoose.Schema({
   frequency: { type: String, enum: ['daily', 'weekly'], default: 'daily' },
   streak: { type: Number, default: 0 },
   completedDates: [{ type: Date }],
+  icon: { type: String, default: '✓' },
+  color: { type: String, default: '#10B981' },
+  category: { type: String, default: 'general' },
+  tags: [{ type: String }],
+  reminder: {
+    enabled: { type: Boolean, default: false },
+    time: { type: String }
+  },
+  notes: [{
+    date: { type: Date, default: Date.now },
+    content: { type: String }
+  }],
+  isPublic: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

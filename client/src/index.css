@@ -6,9 +6,15 @@
 
 @layer base {
   body {
-    @apply bg-background text-primary font-sans antialiased;
+    @apply bg-background text-primary font-sans antialiased transition-colors duration-200;
+  }
+  .dark body {
+    @apply bg-dark-background text-dark-primary;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-semibold text-primary;
+  }
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-dark-primary;
   }
 }

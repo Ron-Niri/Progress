@@ -4,6 +4,24 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  isVerified: { type: Boolean, default: false },
+  verificationCode: { type: String },
+  verificationCodeExpires: { type: Date },
+  resetPasswordCode: { type: String },
+  resetPasswordExpires: { type: Date },
+  profile: {
+    bio: { type: String, default: '' },
+    avatar: { type: String, default: '' },
+    location: { type: String, default: '' },
+    website: { type: String, default: '' }
+  },
+  preferences: {
+    darkMode: { type: Boolean, default: false },
+    emailNotifications: { type: Boolean, default: true },
+    habitReminders: { type: Boolean, default: true }
+  },
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdAt: { type: Date, default: Date.now }
 });
 
