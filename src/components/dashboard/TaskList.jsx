@@ -23,7 +23,7 @@ export function TaskList({ tasks, onToggle, onDelete, onAdd }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
         >
-            <div className="card-title">
+            <div className="card-title" style={{ marginBottom: '12px' }}>
                 Active Missions
                 <ListChecks size={18} />
             </div>

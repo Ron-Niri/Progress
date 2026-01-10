@@ -71,17 +71,32 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#050505] text-white">
-        <motion.div
-           initial={{ scale: 0.8, opacity: 0 }}
-           animate={{ scale: 1, opacity: 1 }}
-           className="flex flex-col items-center gap-6"
+      <div className="sync-screen">
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center gap-4"
         >
-          <div className="logo-box" style={{ width: 60, height: 60 }}>
-            <Zap size={32} fill="white" color="white" />
-          </div>
-          <div className="text-xl font-bold tracking-widest uppercase opacity-50">Synchronizing...</div>
+            <div className="sync-glitch">Syncing Systems</div>
+            <div className="sync-bar-container">
+                <div className="sync-bar-progress"></div>
+            </div>
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ repeat: Infinity, duration: 2, repeatType: 'reverse' }}
+                className="sync-status"
+            >
+                Establishing secure uplink...
+            </motion.div>
         </motion.div>
+        
+        {/* Decorative elements */}
+        <div style={{ position: 'absolute', bottom: '40px', left: '40px', fontSize: '10px', color: 'rgba(255,255,255,0.1)', fontFamily: 'var(--font-mono)' }}>
+            PRGRS_DEV_NODE v1.0.4<br/>
+            AUTH_STATE: PENDING<br/>
+            KERNEL_REV: 8.4.1
+        </div>
       </div>
     );
   }

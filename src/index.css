@@ -191,46 +191,22 @@ body {
   font-size: 1.1rem;
 }
 
-/* Bento Grid High Density */
+/* Higher Density Bento Grid */
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: 170px;
+  grid-auto-rows: 180px;
   gap: 24px;
   max-width: 1400px;
+  margin: 0 auto;
 }
 
-.card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 28px;
-  padding: 32px;
-  transition: var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-}
-
-.card:hover {
-  border-color: var(--border-hover);
-  background-color: var(--bg-card-hover);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-.card-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Modules */
+/* Specific Module Spanning - FIXED */
 .stat-main {
+  grid-column: span 3;
+}
+
+.streak-module {
   grid-column: span 3;
 }
 
@@ -244,40 +220,133 @@ body {
   grid-row: span 3;
 }
 
-.streak-module {
-  grid-column: span 3;
-}
-
 .small-widget {
   grid-column: span 3;
 }
 
-/* Values */
-.value-display {
+/* Card Aesthetic Elevaton */
+.card {
+  background: linear-gradient(165deg, rgba(17, 17, 21, 0.9) 0%, rgba(8, 8, 10, 0.95) 100%);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 28px;
+  padding: 24px;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
-.huge-number {
-  font-size: 3.5rem;
+.card:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  background: linear-gradient(165deg, rgba(20, 20, 25, 0.95) 0%, rgba(12, 12, 15, 1) 100%);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(139, 92, 246, 0.08);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.05), transparent 60%);
+  pointer-events: none;
+}
+
+.card-title {
+  font-size: 0.7rem;
   font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Loading / Sync Screen Re-engineered */
+.sync-screen {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sync-glitch {
   font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.8rem;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.sync-bar-container {
+  width: 300px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.sync-bar-progress {
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  width: 50%;
+  animation: sync-sweep 1.5s infinite ease-in-out;
+}
+
+@keyframes sync-sweep {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(200%); }
+}
+
+/* Value Display Typography */
+.huge-number {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
   letter-spacing: -0.05em;
+  background: linear-gradient(to bottom, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .percent-sign {
-  font-size: 1.4rem;
-  color: var(--text-muted);
+  font-size: 1.5rem;
+  color: var(--primary);
+  opacity: 0.8;
+  margin-left: 2px;
+}
+
+.stat-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 20px;
 }
 
 .trend-badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.1);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 900;
 }
 
 /* Task Styling Refined */

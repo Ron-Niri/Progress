@@ -26,7 +26,7 @@ export function StatCard({ title, value, subtext, icon: Icon, delay, className =
                 {title === "Focus Score" && <span className="percent-sign">%</span>}
             </div>
             {subtext && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                <div className="stat-footer">
                     <span className="trend-badge">+12%</span>
                     <span className="stat-subtext">{subtext}</span>
                 </div>
