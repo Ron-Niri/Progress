@@ -85,9 +85,10 @@ router.post('/verify', async (req, res) => {
     await sendEmail(email, 'welcome', { username: user.username });
 
     const payload = { user: { id: user.id } };
-    jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: 360000 }, (err, token) => {
+    // 30 day expiration for long-lived session
+    jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '30d' }, (err, token) => {
       if (err) throw err;
-      res.json({ token, msg: 'Email verified successfully' });
+      res.json({ token, user: { id: user.id, username: user.username, email: user.email }, msg: 'Email verified successfully' });
     });
   } catch (err) {
     console.error(err.message);
@@ -132,10 +133,17 @@ router.post('/resend-code', async (req, res) => {
 // @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { login: loginId, password } = req.body; // loginId can be email or username
 
   try {
-    let user = await User.findOne({ email });
+    // Case-insensitive search for username or email
+    let user = await User.findOne({
+      $or: [
+        { email: { $regex: new RegExp(`^${loginId}$`, 'i') } },
+        { username: { $regex: new RegExp(`^${loginId}$`, 'i') } }
+      ]
+    });
+
     if (!user) {
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
@@ -150,10 +158,10 @@ router.post('/login', async (req, res) => {
     }
 
     const payload = { user: { id: user.id } };
-
-    jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: 360000 }, (err, token) => {
+    // 30 day expiration for long-lived session
+    jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '30d' }, (err, token) => {
       if (err) throw err;
-      res.json({ token });
+      res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
     });
   } catch (err) {
     console.error(err.message);

@@ -10,36 +10,45 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if token exists
+    // Check if token and user data exists
     const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
     if (token) {
-        // Here you would typically validate the token with an API call like /api/auth/me
-        // For MVP, we'll assume if token exists, we are somewhat logged in
-        // Real implementation should fetch user details here
-        setUser({ token }); 
+        setUser(storedUser ? JSON.parse(storedUser) : { token }); 
     }
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
-    setUser({ token: res.data.token });
+  const login = async (loginId, password) => {
+    const res = await api.post('/auth/login', { login: loginId, password });
+    const { token, user: userData } = res.data;
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
   };
 
   const register = async (username, email, password) => {
-    const res = await api.post('/auth/register', { username, email, password });
-    localStorage.setItem('token', res.data.token);
-    setUser({ token: res.data.token });
+    await api.post('/auth/register', { username, email, password });
+    // Don't set user state yet, need to verify first
+  };
+
+  const verify = async (email, code) => {
+    const res = await api.post('/auth/verify', { email, code });
+    const { token, user: userData } = res.data;
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    return res.data;
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, verify, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

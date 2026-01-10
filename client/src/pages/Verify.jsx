@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
 export default function Verify() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { verify } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email || '';
@@ -16,8 +18,7 @@ export default function Verify() {
     setError('');
     
     try {
-      const res = await api.post('/auth/verify', { email, code });
-      localStorage.setItem('token', res.data.token);
+      await verify(email, code);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.msg || 'Verification failed');

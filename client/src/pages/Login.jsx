@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ loginId: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -15,12 +15,12 @@ export default function Login() {
     setError('');
     
     try {
-      await login(formData.email, formData.password);
+      await login(formData.loginId, formData.password);
       navigate('/dashboard');
     } catch (err) {
       const errorData = err.response?.data;
       if (errorData?.needsVerification) {
-        navigate('/verify', { state: { email: formData.email } });
+        navigate('/verify', { state: { email: formData.loginId } });
       } else {
         setError(errorData?.msg || 'Login failed');
       }
@@ -42,12 +42,12 @@ export default function Login() {
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
               <input
-                type="email"
+                type="text"
                 required
                 className="relative block w-full rounded-md border-0 py-2.5 px-3 text-primary dark:text-dark-primary bg-white dark:bg-dark-background ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-action sm:text-sm sm:leading-6"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="Email or Username"
+                value={formData.loginId}
+                onChange={(e) => setFormData({...formData, loginId: e.target.value})}
               />
             </div>
             <div>
