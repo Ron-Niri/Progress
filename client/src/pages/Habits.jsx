@@ -117,29 +117,29 @@ export default function Habits() {
 
   return (
     <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-heading font-bold text-primary dark:text-dark-primary flex items-center gap-3">
-             <Activity className="text-action" size={32} /> Your Rituals
+          <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
+             <Activity className="text-action" size={36} /> Your Rituals
           </h2>
-          <p className="text-secondary dark:text-dark-secondary mt-1">Consistency is the bridge between goals and accomplishment.</p>
+          <p className="text-secondary dark:text-dark-secondary mt-1 text-sm sm:text-base font-medium opacity-70 leading-relaxed">Consistency is the bridge between goals and accomplishment.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3">
           <button 
             onClick={() => setShowTemplatePicker(true)}
-            className="px-5 py-3 bg-white dark:bg-dark-surface text-primary dark:text-dark-primary rounded-2xl text-sm font-bold flex items-center gap-2 hover:bg-surface dark:hover:bg-gray-800 transition-all border border-gray-100 dark:border-gray-700 shadow-sm"
+            className="px-6 py-4 bg-white dark:bg-dark-surface text-primary dark:text-dark-primary rounded-2xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-surface dark:hover:bg-gray-800 transition-all border border-gray-100 dark:border-gray-700 shadow-sm"
           >
-            <Sparkles size={16} className="text-accent" /> Explore Templates
+            <Sparkles size={18} className="text-accent" /> Templates
           </button>
           <button 
             onClick={() => {
               setShowForm(!showForm);
               if (showForm) setEditingId(null);
             }}
-            className="px-5 py-3 bg-primary dark:bg-action text-white rounded-2xl text-sm font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg"
+            className="px-6 py-4 bg-primary dark:bg-action text-white rounded-2xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
           >
-            {showForm ? <X size={16} /> : <Plus size={16} />} 
-            {showForm ? 'Close Editor' : 'Custom Habit'}
+            {showForm ? <X size={18} /> : <Plus size={18} />} 
+            {showForm ? 'Close' : 'New Habit'}
           </button>
         </div>
       </div>
@@ -270,7 +270,7 @@ export default function Habits() {
               </h3>
               <span className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg">{dailyHabits.length} Active</span>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {dailyHabits.map(habit => (
                 <HabitCard key={habit._id} habit={habit} onCheck={handleCheck} onDelete={handleDelete} onEdit={handleEdit} />
               ))}
@@ -286,7 +286,7 @@ export default function Habits() {
               </h3>
               <span className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg">{weeklyHabits.length} Active</span>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {weeklyHabits.map(habit => (
                 <HabitCard key={habit._id} habit={habit} onCheck={handleCheck} onDelete={handleDelete} onEdit={handleEdit} />
               ))}

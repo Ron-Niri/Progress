@@ -138,8 +138,8 @@ export default function Profile() {
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 dark:opacity-20"></div>
         
         <div className="relative flex flex-col md:flex-row gap-8 items-start md:items-center">
-          <div className="relative">
-            <div className="w-32 h-32 rounded-3xl border-4 border-background dark:border-dark-background overflow-hidden bg-white dark:bg-gray-700 flex items-center justify-center text-secondary shadow-xl">
+          <div className="relative mx-auto md:mx-0">
+            <div className="w-32 h-32 xs:w-40 xs:h-40 rounded-[2.5rem] border-4 border-background dark:border-dark-background overflow-hidden bg-white dark:bg-gray-700 flex items-center justify-center text-secondary shadow-2xl">
               {profile.profile?.avatar ? (
                 <img src={profile.profile.avatar} alt={profile.username} className="w-full h-full object-cover" />
               ) : (
@@ -156,20 +156,20 @@ export default function Profile() {
             )}
           </div>
           
-          <div className="flex-1 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex-1 space-y-4 w-full text-center md:text-left">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h2 className="text-3xl font-heading font-bold text-primary dark:text-dark-primary">{profile.username}</h2>
-                <p className="text-secondary dark:text-dark-secondary mt-1 max-w-lg">{profile.profile?.bio || 'Living with intention and pursuing progress every day.'}</p>
+                <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary">{profile.username}</h2>
+                <p className="text-secondary dark:text-dark-secondary mt-2 max-w-lg font-medium opacity-80 leading-relaxed mx-auto md:mx-0">{profile.profile?.bio || 'Living with intention and pursuing progress every day.'}</p>
               </div>
               
               {!isOwnProfile ? (
                 <button
                   onClick={handleFollow}
-                  className={`px-8 py-3 rounded-2xl font-bold transition-all shadow-lg ${
+                  className={`w-full md:w-auto px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-xl active:scale-95 ${
                     isFollowing 
                       ? 'bg-surface dark:bg-gray-800 text-primary dark:text-dark-primary border border-gray-100 dark:border-gray-700' 
-                      : 'bg-primary dark:bg-action text-white hover:scale-105 shadow-blue-500/20'
+                      : 'bg-primary dark:bg-action text-white hover:scale-[1.02] shadow-blue-500/20'
                   }`}
                 >
                   {isFollowing ? 'Following' : 'Follow User'}
@@ -177,14 +177,14 @@ export default function Profile() {
               ) : (
                 <Link 
                   to="/settings"
-                  className="px-8 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 font-bold text-primary dark:text-dark-primary hover:bg-surface dark:hover:bg-gray-800 transition-all bg-white dark:bg-dark-surface shadow-sm"
+                  className="w-full md:w-auto px-8 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 font-black uppercase tracking-widest text-sm text-primary dark:text-dark-primary hover:bg-surface dark:hover:bg-gray-800 transition-all bg-white dark:bg-dark-surface shadow-sm text-center active:scale-95"
                 >
                   Edit Profile
                 </Link>
               )}
             </div>
             
-            <div className="flex flex-wrap gap-6 text-sm text-secondary dark:text-dark-secondary">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-6 text-xs sm:text-sm text-secondary dark:text-dark-secondary">
               <span className="flex items-center gap-1.5 bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-full"><MapPin size={16} className="text-red-400" /> {profile.profile?.location || 'Everywhere'}</span>
               {profile.profile?.website && (
                 <a href={profile.profile.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-full text-action hover:underline">
@@ -194,18 +194,18 @@ export default function Profile() {
               <span className="flex items-center gap-1.5 bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-full"><Calendar size={16} className="text-blue-400" /> Joined {new Date(profile.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
             </div>
             
-            <div className="flex gap-10 pt-4">
-              <button onClick={() => setShowFollowers(true)} className="group">
-                <p className="text-2xl font-bold text-primary dark:text-dark-primary group-hover:text-action transition-all">{profile.stats.followers}</p>
-                <p className="text-[10px] text-secondary dark:text-dark-secondary uppercase font-bold tracking-[2px]">Followers</p>
+            <div className="flex justify-center md:justify-start gap-12 sm:gap-16 pt-6">
+              <button onClick={() => setShowFollowers(true)} className="group text-center md:text-left transition-transform active:scale-95">
+                <p className="text-2xl sm:text-3xl font-black text-primary dark:text-dark-primary group-hover:text-action transition-all">{profile.stats.followers}</p>
+                <p className="text-[10px] sm:text-xs text-secondary dark:text-dark-secondary uppercase font-black tracking-[2px] opacity-60">Followers</p>
               </button>
-              <button onClick={() => setShowFollowing(true)} className="group">
-                <p className="text-2xl font-bold text-primary dark:text-dark-primary group-hover:text-action transition-all">{profile.stats.following}</p>
-                <p className="text-[10px] text-secondary dark:text-dark-secondary uppercase font-bold tracking-[2px]">Following</p>
+              <button onClick={() => setShowFollowing(true)} className="group text-center md:text-left transition-transform active:scale-95">
+                <p className="text-2xl sm:text-3xl font-black text-primary dark:text-dark-primary group-hover:text-action transition-all">{profile.stats.following}</p>
+                <p className="text-[10px] sm:text-xs text-secondary dark:text-dark-secondary uppercase font-black tracking-[2px] opacity-60">Following</p>
               </button>
-              <div>
-                <p className="text-2xl font-bold text-primary dark:text-dark-primary">{profile.stats.achievements}</p>
-                <p className="text-[10px] text-secondary dark:text-dark-secondary uppercase font-bold tracking-[2px]">Badges</p>
+              <div className="text-center md:text-left">
+                <p className="text-2xl sm:text-3xl font-black text-primary dark:text-dark-primary">{profile.stats.achievements}</p>
+                <p className="text-[10px] sm:text-xs text-secondary dark:text-dark-secondary uppercase font-black tracking-[2px] opacity-60">Badges</p>
               </div>
             </div>
           </div>

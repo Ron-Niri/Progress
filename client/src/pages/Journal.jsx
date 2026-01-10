@@ -104,22 +104,22 @@ export default function Journal() {
 
   return (
     <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-           <h2 className="text-3xl font-heading font-bold text-primary dark:text-dark-primary flex items-center gap-3">
-             <BookOpen className="text-purple-500" size={32} /> Daily Relection
+           <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
+             <BookOpen className="text-purple-500" size={36} /> Daily Reflection
            </h2>
-           <p className="text-secondary dark:text-dark-secondary mt-1">Clear your mind. Document the journey.</p>
+           <p className="text-secondary dark:text-dark-secondary mt-1 text-sm sm:text-base font-medium opacity-70 leading-relaxed">Clear your mind. Document the journey.</p>
         </div>
         <button 
            onClick={() => {
              setShowForm(!showForm);
              if (showForm) setEditingId(null);
            }}
-           className="px-6 py-3 bg-primary dark:bg-action text-white rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg"
+           className="w-full lg:w-auto px-8 py-4 bg-primary dark:bg-action text-white rounded-2xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
         >
           {showForm ? <X size={18} /> : <Plus size={18} />} 
-          {showForm ? 'Close Editor' : 'New Entry'}
+          {showForm ? 'Close' : 'New Entry'}
         </button>
       </div>
 
@@ -140,29 +140,28 @@ export default function Journal() {
                   onChange={e => setNewEntry({...newEntry, content: e.target.value})}
                 />
               </div>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div>
-                    <label className="block text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest mb-2">My Mood</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <label className="block text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] mb-4">Current Vibrations</label>
+                    <div className="grid grid-cols-5 gap-3">
                       {['terrible', 'bad', 'neutral', 'good', 'great'].map(m => (
                         <button
                           key={m}
                           type="button"
                           onClick={() => setNewEntry({...newEntry, mood: m})}
-                          className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${newEntry.mood === m ? 'border-action bg-action/5 bg-white dark:bg-gray-800' : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 opacity-50 hover:opacity-100'}`}
-                          title={m.charAt(0).toUpperCase() + m.slice(1)}
+                          className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 ${newEntry.mood === m ? 'border-action bg-action/5 bg-white dark:bg-gray-800 scale-110 shadow-lg' : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 opacity-50 hover:opacity-100'}`}
                         >
-                          <span className="text-xl">{getMoodEmoji(m)}</span>
+                          <span className="text-2xl">{getMoodEmoji(m)}</span>
                         </button>
                       ))}
                     </div>
                  </div>
                  <div>
-                     <label className="block text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest mb-2">Tags (Optional)</label>
+                     <label className="block text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] mb-4">Categorize</label>
                     <input 
                       type="text" 
-                      className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-dark-background px-5 py-4 text-sm focus:ring-2 focus:ring-action transition-all outline-none text-primary dark:text-dark-primary shadow-sm"
-                      placeholder="work, idea, family..."
+                      className="w-full rounded-2xl border border-gray-100 dark:border-gray-800 bg-surface/50 dark:bg-dark-background px-6 py-4 text-sm font-bold focus:ring-4 focus:ring-action/10 focus:border-action transition-all outline-none text-primary dark:text-dark-primary shadow-sm"
+                      placeholder="e.g. mindfulness, growth"
                       value={newEntry.tags}
                       onChange={e => setNewEntry({...newEntry, tags: e.target.value})}
                     />
@@ -208,19 +207,19 @@ export default function Journal() {
                   <div className="relative z-10">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 bg-white dark:bg-gray-900 rounded-2xl shadow-sm flex items-center justify-center text-3xl">
+                            <div className="w-12 h-12 xs:w-14 xs:h-14 bg-white dark:bg-gray-900 rounded-2xl shadow-sm flex items-center justify-center text-2xl xs:text-3xl">
                               {getMoodEmoji(entry.mood)}
                             </div>
                             <div>
                               <p className="text-[10px] font-black text-secondary uppercase tracking-[2px]">{format(new Date(entry.createdAt), 'EEEE')}</p>
-                              <p className="text-sm font-bold text-primary dark:text-dark-primary">{format(new Date(entry.createdAt), 'MMMM d, yyyy • h:mm a')}</p>
+                              <p className="text-xs xs:text-sm font-bold text-primary dark:text-dark-primary">{format(new Date(entry.createdAt), 'MMMM d, yyyy')}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4 group-hover:translate-x-0 sm:translate-x-20 transition-all opacity-0 group-hover:opacity-100">
-                            <button onClick={() => handleEdit(entry)} className="p-2.5 bg-white dark:bg-gray-800 text-secondary hover:text-action rounded-xl shadow-sm transition-all">
+                        <div className="flex items-center gap-3 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => handleEdit(entry)} className="p-3 bg-white/50 dark:bg-gray-800 text-secondary hover:text-action rounded-xl shadow-sm transition-all active:scale-90">
                               <Edit2 size={16} />
                             </button>
-                            <button onClick={() => handleDelete(entry._id)} className="p-2.5 bg-white dark:bg-gray-800 text-secondary hover:text-red-500 rounded-xl shadow-sm transition-all">
+                            <button onClick={() => handleDelete(entry._id)} className="p-3 bg-white/50 dark:bg-gray-800 text-secondary hover:text-red-500 rounded-xl shadow-sm transition-all active:scale-90">
                               <Trash2 size={16} />
                             </button>
                         </div>

@@ -98,9 +98,9 @@ export default function Dashboard() {
              <span className="px-3 py-1 bg-action/10 text-action text-[10px] font-black uppercase tracking-widest rounded-full">Evolution in Progress</span>
              <span className="text-secondary dark:text-dark-secondary text-xs font-bold">{format(new Date(), 'EEEE, MMMM do')}</span>
            </div>
-           <h1 className="text-4xl md:text-5xl font-heading font-black text-primary dark:text-dark-primary">
-             {getGreeting()}, <span className="text-action">{user?.username}</span>
-           </h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-black text-primary dark:text-dark-primary leading-tight">
+              {getGreeting()}, <span className="text-action">{user?.username}</span>
+            </h1>
         </div>
         
         <div className="max-w-md p-6 bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark relative overflow-hidden group">
@@ -113,14 +113,14 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statsList.map((stat, i) => (
-          <div key={i} className="p-8 bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
-            <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} w-fit mb-6 group-hover:scale-110 transition-transform`}>
+          <div key={i} className="p-6 sm:p-8 bg-white dark:bg-dark-surface rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
+            <div className={`p-3 sm:p-4 rounded-2xl ${stat.bg} ${stat.color} w-fit mb-4 sm:mb-6 group-hover:scale-110 transition-transform`}>
               <stat.icon size={24} />
             </div>
-            <p className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-3xl font-black text-primary dark:text-dark-primary">{stat.value}</p>
+            <p className="text-[10px] sm:text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-[2px] mb-1">{stat.label}</p>
+            <p className="text-2xl sm:text-3xl font-black text-primary dark:text-dark-primary">{stat.value}</p>
           </div>
         ))}
       </div>

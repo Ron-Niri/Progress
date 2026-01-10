@@ -76,23 +76,23 @@ export default function Analytics() {
     return (
         <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div>
-                <h2 className="text-3xl font-heading font-bold text-primary dark:text-dark-primary flex items-center gap-3">
-                    <Activity size={32} className="text-action" /> Performance Insights
+                <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
+                    <Activity size={36} className="text-action" /> Performance Insights
                 </h2>
-                <p className="text-secondary dark:text-dark-secondary mt-1">Visualize your consistency and personal evolution.</p>
+                <p className="text-secondary dark:text-dark-secondary mt-1 text-sm sm:text-base font-medium opacity-70 leading-relaxed">Visualize your consistency and personal evolution.</p>
             </div>
 
             {/* Stat Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {statCards.map((stat, idx) => (
-                    <div key={idx} className="p-8 bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
-                        <div className="flex items-center justify-between">
+                    <div key={idx} className="p-6 sm:p-8 bg-white dark:bg-dark-surface rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
+                        <div className="flex flex-row xs:flex-col md:flex-row items-center justify-between gap-4">
                             <div>
-                                <p className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest mb-2 group-hover:text-primary dark:group-hover:text-dark-primary transition-all">{stat.title}</p>
-                                <p className="text-4xl font-black text-primary dark:text-dark-primary">{stat.value}</p>
+                                <p className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] mb-2 group-hover:text-primary dark:group-hover:text-dark-primary transition-all">{stat.title}</p>
+                                <p className="text-3xl sm:text-4xl font-black text-primary dark:text-dark-primary leading-none">{stat.value}</p>
                             </div>
-                            <div className={`p-4 rounded-2xl ${stat.bgColor} ${stat.color} shadow-sm`}>
-                                <stat.icon size={28} />
+                            <div className={`p-3 sm:p-4 rounded-2xl ${stat.bgColor} ${stat.color} shadow-sm shrink-0`}>
+                                <stat.icon size={24} />
                             </div>
                         </div>
                     </div>
@@ -101,46 +101,46 @@ export default function Analytics() {
 
             {/* Charts Section */}
             <div className="grid gap-8 md:grid-cols-2">
-                <div className="p-8 bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-lg font-heading font-bold text-primary dark:text-dark-primary flex items-center gap-2">
-                            <Calendar size={20} className="text-action" /> Weekly Habit Completion
+                <div className="p-6 sm:p-8 bg-white dark:bg-dark-surface rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <h3 className="text-lg font-heading font-black text-primary dark:text-dark-primary flex items-center gap-2">
+                            <Calendar size={20} className="text-action" /> Completion Rate
                         </h3>
-                        <span className="text-xs font-bold text-secondary uppercase tracking-widest bg-surface dark:bg-gray-800 px-3 py-1 rounded-full">Last 7 Days</span>
+                        <span className="text-[10px] font-black text-secondary uppercase tracking-widest bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg w-fit">Last 7 Days</span>
                     </div>
-                    <div className="h-72 w-full">
+                    <div className="h-64 sm:h-72 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={stats.weeklyData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? '#334155' : '#F1F5F9'} />
                                 <XAxis 
                                     dataKey="name" 
                                     stroke={chartAxisColor} 
-                                    fontSize={12} 
+                                    fontSize={10} 
                                     tickLine={false} 
                                     axisLine={false}
                                     dy={10}
                                 />
                                 <YAxis 
                                     stroke={chartAxisColor} 
-                                    fontSize={12} 
+                                    fontSize={10} 
                                     tickLine={false} 
                                     axisLine={false}
                                     domain={[0, 100]}
                                     tickFormatter={(val) => `${val}%`}
                                 />
                                 <Tooltip 
-                                    cursor={{fill: darkMode ? '#334155' : '#F8FAFC', radius: 8}}
+                                    cursor={{fill: darkMode ? '#334155' : '#F8FAFC', radius: 12}}
                                     contentStyle={{ 
                                         backgroundColor: tooltipBg,
-                                        borderRadius: '16px', 
+                                        borderRadius: '20px', 
                                         border: `1px solid ${tooltipBorder}`, 
-                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
                                         color: darkMode ? '#F1F5F9' : '#1E293B'
                                     }}
                                     itemStyle={{ color: '#3B82F6', fontWeight: 'bold' }}
                                     formatter={(value) => [`${value}%`, 'Completion Rate']}
                                 />
-                                <Bar dataKey="completion" fill="#3B82F6" radius={[6, 6, 0, 0]} barSize={32} />
+                                <Bar dataKey="completion" fill="#3B82F6" radius={[6, 6, 6, 6]} barSize={24} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

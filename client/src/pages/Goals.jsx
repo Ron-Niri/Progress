@@ -88,22 +88,22 @@ export default function Goals() {
 
   return (
     <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-           <h2 className="text-3xl font-heading font-bold text-primary dark:text-dark-primary flex items-center gap-3">
-             <Target className="text-action" size={32} /> Goals & Milestones
+           <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
+             <Target className="text-action" size={36} /> Goals & Milestones
            </h2>
-           <p className="text-secondary dark:text-dark-secondary mt-1">Track your long-term ambitions and break them down.</p>
+           <p className="text-secondary dark:text-dark-secondary mt-1 text-sm sm:text-base font-medium opacity-70 leading-relaxed">Track your long-term ambitions and break them down.</p>
         </div>
         <button 
            onClick={() => {
              setShowForm(!showForm);
              if (showForm) setEditingId(null);
            }}
-           className="px-6 py-3 bg-primary dark:bg-action text-white rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg"
+           className="w-full lg:w-auto px-8 py-4 bg-primary dark:bg-action text-white rounded-2xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
         >
           {showForm ? <X size={18} /> : <Plus size={18} />} 
-          {showForm ? 'Close Editor' : 'Target New Goal'}
+          {showForm ? 'Close' : 'Target New Goal'}
         </button>
       </div>
 
@@ -165,7 +165,7 @@ export default function Goals() {
           </div>
         )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {goals.map(goal => {
           const daysLeft = getDaysLeft(goal.targetDate);
           const isOverdue = daysLeft !== null && daysLeft < 0 && goal.status !== 'completed';

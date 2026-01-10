@@ -144,17 +144,17 @@ export default function Settings() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
-            <SettingsIcon size={40} className="text-action" /> Command Center
+          <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
+            <SettingsIcon size={36} className="text-action shrink-0" /> Command Center
           </h2>
-          <p className="text-secondary dark:text-dark-secondary mt-1 text-lg font-medium opacity-70">Customize your Progress environment.</p>
+          <p className="text-secondary dark:text-dark-secondary mt-1 text-sm sm:text-lg font-medium opacity-70 leading-relaxed">Customize your Progress environment.</p>
         </div>
         
         {saved && (
-           <div className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-2xl font-bold shadow-lg animate-in zoom-in slide-in-from-right-10 duration-500">
-             <Check size={20} /> Preferences Synced
+           <div className="w-full lg:w-auto flex items-center justify-center gap-2 px-6 py-4 bg-green-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg animate-in zoom-in slide-in-from-right-10 duration-500">
+             <Check size={18} /> Credentials Synchronized
            </div>
         )}
       </div>
@@ -202,14 +202,14 @@ export default function Settings() {
           )}
 
           {activeTab === 'profile' && (
-            <section className="bg-white dark:bg-dark-surface rounded-[2.5rem] border border-gray-100 dark:border-gray-700 p-10 shadow-soft dark:shadow-soft-dark animate-in slide-in-from-right-4 duration-500">
-              <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-100 dark:border-gray-800">
-                <div className="w-16 h-16 bg-action/10 rounded-2xl flex items-center justify-center text-action">
-                  <User size={32} />
+            <section className="bg-white dark:bg-dark-surface rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 dark:border-gray-700 p-6 sm:p-10 shadow-soft dark:shadow-soft-dark animate-in slide-in-from-right-4 duration-500">
+              <div className="flex items-center gap-4 mb-8 sm:mb-10 pb-6 border-b border-gray-100 dark:border-gray-800">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-action/10 rounded-2xl flex items-center justify-center text-action shrink-0">
+                  <User size={24} className="sm:size-32" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-heading font-black text-primary dark:text-dark-primary">Personal Identity</h3>
-                  <p className="text-secondary dark:text-dark-secondary text-sm font-medium">This information is visible to other members.</p>
+                  <h3 className="text-xl sm:text-2xl font-heading font-black text-primary dark:text-dark-primary leading-tight">Personal Identity</h3>
+                  <p className="text-secondary dark:text-dark-secondary text-xs sm:text-sm font-medium opacity-70">This information is visible to other members.</p>
                 </div>
               </div>
               
@@ -294,14 +294,14 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-8 bg-surface dark:bg-gray-800/30 rounded-[2rem] border border-gray-50 dark:border-gray-800">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 sm:p-8 bg-surface/50 dark:bg-gray-800/30 rounded-[2rem] border border-gray-50 dark:border-gray-800 transition-all hover:bg-white dark:hover:bg-dark-surface hover:shadow-soft group">
                   <div>
-                    <p className="font-black text-primary dark:text-dark-primary uppercase tracking-widest text-xs mb-1">Illumination Mode</p>
-                    <p className="text-sm text-secondary dark:text-dark-secondary font-medium">Toggle between Solar (Light) and Astral (Dark) themes.</p>
+                    <p className="font-black text-primary dark:text-dark-primary uppercase tracking-[2px] text-[10px] mb-1 group-hover:text-action transition-all leading-tight">Illumination Mode</p>
+                    <p className="text-sm text-secondary dark:text-dark-secondary font-medium opacity-70">Toggle between Solar and Astral themes.</p>
                   </div>
                   <button 
                     onClick={toggleDarkMode}
-                    className={`relative w-20 h-10 rounded-full transition-all duration-500 flex items-center ${darkMode ? 'bg-indigo-600' : 'bg-orange-400'} shadow-inner`}
+                    className={`relative w-20 h-10 rounded-full transition-all duration-500 flex items-center ${darkMode ? 'bg-indigo-600' : 'bg-orange-400'} shadow-inner active:scale-95`}
                   >
                     <div className={`absolute w-8 h-8 rounded-2xl bg-white shadow-2xl transition-all duration-500 flex items-center justify-center ${darkMode ? 'translate-x-[2.75rem]' : 'translate-x-1'} rotate-${darkMode ? '0' : '45'}`}>
                       {darkMode ? <Moon size={18} className="text-indigo-600" /> : <Sun size={18} className="text-orange-400" />}
