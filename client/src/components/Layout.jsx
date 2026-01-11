@@ -37,9 +37,9 @@ export default function Layout({ children }) {
   ];
 
   return (
-    <div className="min-h-screen bg-background dark:bg-dark-background flex transition-colors overflow-hidden">
+    <div className="h-screen bg-background dark:bg-dark-background flex transition-colors overflow-hidden">
       {/* Sidebar for Desktop */}
-      <aside className="w-72 bg-white dark:bg-dark-surface border-r border-gray-100 dark:border-gray-700 hidden lg:flex flex-col transition-colors sticky top-0 h-screen">
+      <aside className="w-72 bg-white dark:bg-dark-surface border-r border-gray-100 dark:border-gray-700 hidden lg:flex flex-col transition-colors fixed top-0 bottom-0 left-0 z-30">
         <div className="p-8 flex items-center justify-between">
           <Logo />
         </div>
@@ -101,7 +101,7 @@ export default function Layout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 relative">
+      <div className="flex-1 lg:ml-72 flex flex-col min-w-0 relative">
         {/* Mobile Mini Header */}
         <div className="lg:hidden sticky top-0 z-40 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 px-5 h-20 flex items-center justify-between">
             <Logo className="scale-90 origin-left" />
