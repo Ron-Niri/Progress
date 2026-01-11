@@ -1,22 +1,44 @@
 import axios from 'axios';
+import nprogress from 'nprogress';
+import 'nprogress/nprogress.css';
+
+// Configure NProgress
+nprogress.configure({ 
+  showSpinner: false,
+  trickleSpeed: 200,
+  minimum: 0.3
+});
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Add a request interceptor to include the token
+// Add a request interceptor to show progress
 api.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['x-auth-token'] = token;
-    }
+    nprogress.start();
     return config;
   },
-  error => Promise.reject(error)
+  error => {
+    nprogress.done();
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to hide progress
+api.interceptors.response.use(
+  response => {
+    nprogress.done();
+    return response;
+  },
+  error => {
+    nprogress.done();
+    return Promise.reject(error);
+  }
 );
 
 export default api;

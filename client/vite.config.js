@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   // Load env file from directory one level up
   const env = loadEnv(mode, '../', '')
   
-  const serverPort = env.SERVER_PORT || 5000
+  const serverPort = env.SERVER_PORT || 5001
   
   return {
     plugins: [

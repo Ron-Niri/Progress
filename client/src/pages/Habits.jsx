@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import api from '../utils/api';
 import HabitCard from '../components/HabitCard';
 import HabitTemplatePicker from '../components/HabitTemplatePicker';
-import { Plus, Trash2, Calendar, Sparkles, Filter, Search, X, Check, Activity } from 'lucide-react';
+import { Plus, Trash2, Calendar, Sparkles, Filter, Search, X, Check, Activity, Edit2 } from 'lucide-react';
+import Skeleton from '../components/Skeleton';
 
 export default function Habits() {
   const [habits, setHabits] = useState([]);
@@ -26,6 +27,7 @@ export default function Habits() {
 
   const fetchHabits = async () => {
     try {
+      if (habits.length === 0) setLoading(true);
       const res = await api.get('/habits');
       setHabits(res.data);
       setLoading(false);
@@ -100,12 +102,7 @@ export default function Habits() {
     }
   };
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center h-64 space-y-4">
-      <div className="w-10 h-10 border-4 border-slate-200 border-t-action rounded-full animate-spin"></div>
-      <p className="text-secondary dark:text-dark-secondary font-medium animate-pulse">Syncing your rituals...</p>
-    </div>
-  );
+  // No early return with spinner anymore
 
   const filteredHabits = habits.filter(h => 
     h.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -262,34 +259,42 @@ export default function Habits() {
 
       {/* Habit Groups */}
       <div className="space-y-12">
-        {dailyHabits.length > 0 && (
+        {((loading && habits.length === 0) || dailyHabits.length > 0) && (
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-4">
               <h3 className="font-heading font-bold text-xl text-primary dark:text-dark-primary flex items-center gap-3">
                 <Calendar size={24} className="text-action opacity-50" /> Daily Rituals
               </h3>
-              <span className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg">{dailyHabits.length} Active</span>
+              <span className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg">{(habits.length > 0 || !loading) ? dailyHabits.length : '...'} Active</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {dailyHabits.map(habit => (
-                <HabitCard key={habit._id} habit={habit} onCheck={handleCheck} onDelete={handleDelete} onEdit={handleEdit} />
-              ))}
+              {loading && habits.length === 0 ? (
+                [...Array(4)].map((_, i) => <Skeleton key={i} className="h-32 rounded-3xl" />)
+              ) : (
+                dailyHabits.map(habit => (
+                  <HabitCard key={habit._id} habit={habit} onCheck={handleCheck} onDelete={handleDelete} onEdit={handleEdit} />
+                ))
+              )}
             </div>
           </div>
         )}
 
-        {weeklyHabits.length > 0 && (
+        {((loading && habits.length === 0) || weeklyHabits.length > 0) && (
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-4">
               <h3 className="font-heading font-bold text-xl text-primary dark:text-dark-primary flex items-center gap-3">
                 <Filter size={24} className="text-accent opacity-50" /> Weekly Objectives
               </h3>
-              <span className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg">{weeklyHabits.length} Active</span>
+              <span className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg">{(habits.length > 0 || !loading) ? weeklyHabits.length : '...'} Active</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {weeklyHabits.map(habit => (
-                <HabitCard key={habit._id} habit={habit} onCheck={handleCheck} onDelete={handleDelete} onEdit={handleEdit} />
-              ))}
+              {loading && habits.length === 0 ? (
+                [...Array(2)].map((_, i) => <Skeleton key={i} className="h-32 rounded-3xl" />)
+              ) : (
+                weeklyHabits.map(habit => (
+                  <HabitCard key={habit._id} habit={habit} onCheck={handleCheck} onDelete={handleDelete} onEdit={handleEdit} />
+                ))
+              )}
             </div>
           </div>
         )}

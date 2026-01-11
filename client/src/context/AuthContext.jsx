@@ -10,19 +10,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if token and user data exists
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (token) {
-        setUser(storedUser ? JSON.parse(storedUser) : { token }); 
-    }
-    setLoading(false);
+    const checkAuth = async () => {
+      try {
+        const res = await api.get('/auth/me');
+        setUser(res.data);
+      } catch (err) {
+        console.error('Auth check failed:', err.response?.data?.msg || err.message);
+        // If it fails, we don't have a valid session
+        localStorage.removeItem('user');
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (loginId, password) => {
     const res = await api.post('/auth/login', { login: loginId, password });
-    const { token, user: userData } = res.data;
-    localStorage.setItem('token', token);
+    const { user: userData } = res.data;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -34,15 +41,18 @@ export const AuthProvider = ({ children }) => {
 
   const verify = async (email, code) => {
     const res = await api.post('/auth/verify', { email, code });
-    const { token, user: userData } = res.data;
-    localStorage.setItem('token', token);
+    const { user: userData } = res.data;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     return res.data;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
     localStorage.removeItem('user');
     setUser(null);
   };

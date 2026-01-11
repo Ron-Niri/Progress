@@ -3,11 +3,22 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { sendEmail } from '../utils/emailService.js';
+import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Generate 6-digit code
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// Set token in cookie
+const setTokenCookie = (res, token) => {
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  });
+};
 
 // @route   POST api/auth/register
 // @desc    Register user and send verification email
@@ -88,6 +99,7 @@ router.post('/verify', async (req, res) => {
     // 30 day expiration for long-lived session
     jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '30d' }, (err, token) => {
       if (err) throw err;
+      setTokenCookie(res, token);
       res.json({ token, user: { id: user.id, username: user.username, email: user.email }, msg: 'Email verified successfully' });
     });
   } catch (err) {
@@ -161,6 +173,7 @@ router.post('/login', async (req, res) => {
     // 30 day expiration for long-lived session
     jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '30d' }, (err, token) => {
       if (err) throw err;
+      setTokenCookie(res, token);
       res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
     });
   } catch (err) {
@@ -265,6 +278,27 @@ router.post('/change-password', async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server error');
   }
+});
+
+// @route   GET api/auth/me
+// @desc    Get current user
+// @access  Private
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// @route   POST api/auth/logout
+// @desc    Logout user & clear cookie
+// @access  Public
+router.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ msg: 'Logged out successfully' });
 });
 
 export default router;
