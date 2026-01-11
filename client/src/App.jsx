@@ -13,6 +13,7 @@ import Analytics from './pages/Analytics';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Motivation from './pages/Motivation';
+import AdminPanel from './pages/AdminPanel';
 import Layout from './components/Layout';
 
 // Wrapper for protected routes to enforce authentication and layout
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:userId" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/admin" element={<AdminPanel />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

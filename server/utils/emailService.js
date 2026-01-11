@@ -209,16 +209,35 @@ const emailTemplates = {
   })
 };
 
-export const sendEmail = async (to, templateName, data) => {
-  console.log(`📡 Attempting to send ${templateName} email to: ${to}`);
-  try {
-    const template = emailTemplates[templateName](data.code || '', data.username || '');
+export const sendEmail = async (...args) => {
+  let to, subject, html, templateName;
+
+  // Handle both: sendEmail({ to, subject, html }) AND sendEmail(to, templateName, data)
+  if (args.length === 1 && typeof args[0] === 'object') {
+    ({ to, subject, html } = args[0]);
+    templateName = 'custom';
+  } else {
+    const [recipient, type, data] = args;
+    to = recipient;
+    templateName = type;
     
+    if (emailTemplates[type]) {
+      const template = emailTemplates[type](data?.code || '', data?.username || '');
+      subject = template.subject;
+      html = template.html;
+    } else {
+      throw new Error(`Invalid email template: ${type}`);
+    }
+  }
+
+  console.log(`📡 Attempting to send ${templateName} email to: ${to}`);
+  
+  try {
     const mailOptions = {
       from: `"${process.env.SMTP_FROM_NAME || 'Progress App'}" <${process.env.SMTP_FROM_EMAIL}>`,
       to,
-      subject: template.subject,
-      html: template.html
+      subject,
+      html
     };
 
     const info = await transporter.sendMail(mailOptions);

@@ -52,7 +52,8 @@ export default defineConfig(({ mode }) => {
     define: {
       'import.meta.env.VITE_API_URL': mode === 'production' 
         ? JSON.stringify('/api') 
-        : JSON.stringify(`http://localhost:${serverPort}/api`)
+        : JSON.stringify(`http://localhost:${serverPort}/api`),
+      'import.meta.env.VITE_ADMIN_USERNAME': JSON.stringify(env.VITE_ADMIN_USERNAME || 'Ron')
     }
   }
 })

@@ -12,6 +12,8 @@ import journalRoutes from './routes/journal.js';
 import statsRoutes from './routes/stats.js';
 import profileRoutes from './routes/profile.js';
 import achievementsRoutes from './routes/achievements.js';
+import adminRoutes from './routes/admin.js';
+import scheduleGoalReminders from './services/goalReminders.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,6 +49,7 @@ app.use('/api/journal', journalRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/achievements', achievementsRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/api', (req, res) => {
   res.json({ message: 'Progress API is running', status: 'OK' });
@@ -81,6 +84,9 @@ const connectDB = async () => {
 };
 
 connectDB();
+
+// Initialize cron jobs after DB connection
+scheduleGoalReminders();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

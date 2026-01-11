@@ -15,17 +15,18 @@ import {
   User,
   Menu,
   X,
-  Zap
+  Zap,
+  Shield
 } from 'lucide-react';
 import Logo from './Logo';
 
 export default function Layout({ children }) {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navigation = [
+  const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Habits', href: '/habits', icon: CheckCircle },
     { name: 'Goals', href: '/goals', icon: Target },
@@ -35,6 +36,13 @@ export default function Layout({ children }) {
     { name: 'Profile', href: '/profile', icon: User },
     { name: 'Settings', href: '/settings', icon: SettingsIcon },
   ];
+
+  // Add Admin link only for admin users
+  const isAdmin = user?.username?.toLowerCase() === import.meta.env.VITE_ADMIN_USERNAME?.toLowerCase();
+  
+  const navigation = isAdmin
+    ? [...baseNavigation, { name: 'Admin', href: '/admin', icon: Shield, isAdmin: true }]
+    : baseNavigation;
 
   return (
     <div className="h-screen bg-background dark:bg-dark-background flex transition-colors overflow-hidden">
@@ -65,17 +73,23 @@ export default function Layout({ children }) {
         <nav className="flex-1 px-6 space-y-2 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
+            const isAdminLink = item.isAdmin;
+            
             return (
               <Link
                 key={item.name}
                 to={item.href}
                 className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all ${
                   isActive 
-                    ? 'bg-action text-white shadow-lg shadow-blue-500/20 active:scale-95' 
-                    : 'text-secondary dark:text-dark-secondary hover:bg-surface dark:hover:bg-gray-800 hover:text-primary dark:hover:text-dark-primary'
+                    ? isAdminLink
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-500/20 active:scale-95'
+                      : 'bg-action text-white shadow-lg shadow-blue-500/20 active:scale-95'
+                    : isAdminLink
+                      ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-200 dark:border-red-900/20'
+                      : 'text-secondary dark:text-dark-secondary hover:bg-surface dark:hover:bg-gray-800 hover:text-primary dark:hover:text-dark-primary'
                 }`}
               >
-                <item.icon size={20} className={isActive ? 'text-white' : 'text-secondary dark:text-dark-secondary'} />
+                <item.icon size={20} className={isActive ? 'text-white' : isAdminLink ? 'text-red-600 dark:text-red-400' : 'text-secondary dark:text-dark-secondary'} />
                 {item.name}
               </Link>
             )
@@ -162,6 +176,8 @@ export default function Layout({ children }) {
               <div className="space-y-4">
                 {navigation.map((item) => {
                   const isActive = location.pathname === item.href;
+                  const isAdminLink = item.isAdmin;
+                  
                   return (
                     <Link
                       key={item.name}
@@ -169,11 +185,15 @@ export default function Layout({ children }) {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`flex items-center gap-5 p-5 rounded-3xl text-lg font-black transition-all ${
                         isActive 
-                          ? 'bg-action text-white shadow-xl shadow-blue-500/30' 
-                          : 'bg-surface dark:bg-gray-800 text-primary dark:text-dark-primary border border-gray-100 dark:border-gray-700'
+                          ? isAdminLink
+                            ? 'bg-red-600 text-white shadow-xl shadow-red-500/30'
+                            : 'bg-action text-white shadow-xl shadow-blue-500/30' 
+                          : isAdminLink
+                            ? 'bg-red-50 dark:bg-red-900/10 text-red-600 border border-red-200 dark:border-red-900/20'
+                            : 'bg-surface dark:bg-gray-800 text-primary dark:text-dark-primary border border-gray-100 dark:border-gray-700'
                       }`}
                     >
-                      <item.icon size={28} />
+                      <item.icon size={28} className={isActive ? 'text-white' : isAdminLink ? 'text-red-600' : ''} />
                       {item.name}
                     </Link>
                   )

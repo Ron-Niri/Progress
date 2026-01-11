@@ -18,7 +18,9 @@ const UserSchema = new mongoose.Schema({
   preferences: {
     darkMode: { type: Boolean, default: false },
     emailNotifications: { type: Boolean, default: true },
-    habitReminders: { type: Boolean, default: true }
+    habitReminders: { type: Boolean, default: true },
+    goalReminders: { type: Boolean, default: true },
+    reminderDaysBefore: { type: Number, default: 3 } // Days before deadline to send reminder
   },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

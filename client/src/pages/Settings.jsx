@@ -35,7 +35,9 @@ export default function Settings() {
 
   const [preferences, setPreferences] = useState({
     emailNotifications: true,
-    habitReminders: true
+    habitReminders: true,
+    goalReminders: true,
+    reminderDaysBefore: 3
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -64,7 +66,9 @@ export default function Settings() {
       });
       setPreferences({
         emailNotifications: res.data.preferences?.emailNotifications ?? true,
-        habitReminders: res.data.preferences?.habitReminders ?? true
+        habitReminders: res.data.preferences?.habitReminders ?? true,
+        goalReminders: res.data.preferences?.goalReminders ?? true,
+        reminderDaysBefore: res.data.preferences?.reminderDaysBefore ?? 3
       });
       setLoading(false);
     } catch (err) {
@@ -324,7 +328,8 @@ export default function Settings() {
                 <div className="space-y-6">
                   {[
                     { key: 'emailNotifications', label: 'Email Intelligence', desc: 'Detailed digest of your weekly evolutionary metrics.' },
-                    { key: 'habitReminders', label: 'In-App Alerts', desc: 'Real-time nudges for your high-priority daily rituals.' }
+                    { key: 'habitReminders', label: 'In-App Alerts', desc: 'Real-time nudges for your high-priority daily rituals.' },
+                    { key: 'goalReminders', label: 'Goal Deadline Alerts', desc: 'Email notifications when your goals are approaching their deadline.' }
                   ].map((pref) => (
                     <div key={pref.key} className="flex items-center justify-between p-6 hover:bg-surface dark:hover:bg-gray-800/30 rounded-2xl transition-all group">
                       <div>
@@ -342,6 +347,35 @@ export default function Settings() {
                       </label>
                     </div>
                   ))}
+                  
+                  {/* Reminder Days Configuration */}
+                  {preferences.goalReminders && (
+                    <div className="p-6 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/20 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <p className="font-black text-primary dark:text-dark-primary uppercase tracking-widest text-xs mb-1">Reminder Window</p>
+                          <p className="text-sm text-secondary dark:text-dark-secondary font-medium">How many days before the deadline should we notify you?</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleUpdatePreferences({ reminderDaysBefore: Math.max(1, preferences.reminderDaysBefore - 1) })}
+                            className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center font-black text-action hover:bg-action hover:text-white transition-all shadow-sm"
+                          >
+                            −
+                          </button>
+                          <div className="w-16 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center font-black text-xl text-action shadow-sm">
+                            {preferences.reminderDaysBefore}
+                          </div>
+                          <button
+                            onClick={() => handleUpdatePreferences({ reminderDaysBefore: Math.min(14, preferences.reminderDaysBefore + 1) })}
+                            className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center font-black text-action hover:bg-action hover:text-white transition-all shadow-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
             </div>

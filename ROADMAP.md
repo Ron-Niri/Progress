@@ -64,13 +64,13 @@
 - [ ] Habit history calendar view
 
 ### Advanced Goal System
-- [ ] Sub-goals and milestones
-- [ ] Goal templates
-- [ ] Goal dependencies
-- [ ] Deadline reminders
-- [ ] Goal categories
-- [ ] Collaborative goals
-- [ ] Goal attachments (images, files)
+- [x] Sub-goals and milestones | Interactive checkboxes with auto-progress
+- [x] Goal templates | Quick-start templates (5K run, books, React, etc.)
+- [x] Goal dependencies | Prerequisites system with visual badges
+- [x] Deadline reminders | Email notifications with cron job (daily at 9 AM)
+- [x] Goal categories | 5 categories: General, Health, Career, Finance, Personal
+- [x] Collaborative goals | Collaborators field added (email-based)
+- [x] Goal attachments (images, files) | Resource links with clickable badges
 
 ### Social & Community
 - [x] User profiles
@@ -147,9 +147,9 @@
 - [ ] Accessibility testing
 
 ### DevOps
-- [ ] CI/CD pipeline
-- [ ] Automated deployments
-- [ ] Database migrations
+- [x] CI/CD pipeline | Done using coolify
+- [x] Automated deployments | Done using coolify
+- [x] Database migrations | Done using coolify
 - [ ] Monitoring and alerting
 - [ ] Error tracking (Sentry)
 - [ ] Analytics (Google Analytics)
