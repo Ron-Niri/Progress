@@ -93,42 +93,42 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 sm:space-y-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header & Quote */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-        <div>
-           <div className="flex items-center gap-3 mb-2">
-             <span className="px-3 py-1 bg-action/10 text-action text-[10px] font-black uppercase tracking-widest rounded-full">Evolution in Progress</span>
-             <span className="text-secondary dark:text-dark-secondary text-xs font-bold">{format(new Date(), 'EEEE, MMMM do')}</span>
-           </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-black text-primary dark:text-dark-primary leading-tight">
-              {getGreeting()}, <span className="text-action">{user?.username}</span>
-            </h1>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 sm:gap-8">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="px-2 py-0.5 bg-action/10 text-action text-[8px] sm:text-[10px] font-black uppercase tracking-widest rounded-full">Evolution</span>
+            <span className="text-secondary dark:text-dark-secondary text-[10px] sm:text-xs font-bold">{format(new Date(), 'EEEE, MMMM do')}</span>
+          </div>
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-heading font-black text-primary dark:text-dark-primary leading-tight">
+            {getGreeting()}, <span className="text-action">{user?.username}</span>
+          </h1>
         </div>
         
-        <div className="max-w-md p-6 bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark relative overflow-hidden group">
-            <Quote className="absolute -top-2 -left-2 text-action/5 group-hover:scale-110 transition-transform" size={80} />
-            <p className="text-primary dark:text-dark-primary font-medium italic relative z-10 leading-relaxed">
-              "The secret of your future is hidden in your daily routine."
-            </p>
-            <p className="text-secondary dark:text-dark-secondary text-xs font-bold mt-4 uppercase tracking-widest">— Mike Murdock</p>
+        <div className="max-w-md p-4 sm:p-6 bg-white dark:bg-dark-surface rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark relative overflow-hidden group">
+          <Quote className="absolute -top-1 -left-1 text-action/5 group-hover:scale-110 transition-transform sm:w-20 sm:h-20" size={50} />
+          <p className="text-xs sm:text-base text-primary dark:text-dark-primary font-medium italic relative z-10 leading-relaxed">
+            "The secret of your future is hidden in your daily routine."
+          </p>
+          <p className="text-[9px] sm:text-xs font-bold text-secondary dark:text-dark-secondary mt-2 sm:mt-4 uppercase tracking-widest">— Mike Murdock</p>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {loading && !data ? (
           [...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-[2rem]" />
+            <Skeleton key={i} className="h-28 sm:h-40 rounded-2xl sm:rounded-[2rem]" />
           ))
         ) : (
           statsList.map((stat, i) => (
-            <div key={i} className="p-6 sm:p-8 bg-white dark:bg-dark-surface rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
-              <div className={`p-3 sm:p-4 rounded-2xl ${stat.bg} ${stat.color} w-fit mb-4 sm:mb-6 group-hover:scale-110 transition-transform`}>
-                <stat.icon size={24} />
+            <div key={i} className="p-4 sm:p-8 bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
+              <div className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl ${stat.bg} ${stat.color} w-fit mb-3 sm:mb-6 group-hover:scale-110 transition-transform`}>
+                <stat.icon size={18} className="sm:w-6 sm:h-6" />
               </div>
-              <p className="text-[10px] sm:text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-[2px] mb-1">{stat.label}</p>
-              <p className="text-2xl sm:text-3xl font-black text-primary dark:text-dark-primary">{stat.value}</p>
+              <p className="text-[9px] sm:text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-wider mb-1">{stat.label}</p>
+              <p className="text-xl sm:text-3xl font-black text-primary dark:text-dark-primary">{stat.value}</p>
             </div>
           ))
         )}

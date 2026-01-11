@@ -74,25 +74,25 @@ export default function Analytics() {
     const tooltipBorder = darkMode ? '#334155' : '#E2E8F0';
 
     return (
-        <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div>
-                <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
-                    <Activity size={36} className="text-action" /> Performance Insights
+        <div className="space-y-5 sm:space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col gap-0.5">
+                <h2 className="text-xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-2">
+                    <Activity size={24} className="text-action sm:w-9 sm:h-9" /> Performance Insights
                 </h2>
-                <p className="text-secondary dark:text-dark-secondary mt-1 text-sm sm:text-base font-medium opacity-70 leading-relaxed">Visualize your consistency and personal evolution.</p>
+                <p className="text-secondary dark:text-dark-secondary text-[10px] sm:text-base font-medium opacity-70 leading-relaxed px-1">Track your consistency and personal evolution.</p>
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
                 {statCards.map((stat, idx) => (
-                    <div key={idx} className="p-6 sm:p-8 bg-white dark:bg-dark-surface rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
-                        <div className="flex flex-row xs:flex-col md:flex-row items-center justify-between gap-4">
-                            <div>
-                                <p className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-[2px] mb-2 group-hover:text-primary dark:group-hover:text-dark-primary transition-all">{stat.title}</p>
-                                <p className="text-3xl sm:text-4xl font-black text-primary dark:text-dark-primary leading-none">{stat.value}</p>
+                    <div key={idx} className="p-3.5 sm:p-8 bg-white dark:bg-dark-surface rounded-2xl sm:rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark hover:scale-[1.02] transition-all group">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-4">
+                            <div className="order-2 sm:order-1">
+                                <p className="text-[8px] sm:text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-widest mb-0.5 group-hover:text-primary dark:group-hover:text-dark-primary transition-all">{stat.title}</p>
+                                <p className="text-xl sm:text-4xl font-black text-primary dark:text-dark-primary leading-none">{stat.value}</p>
                             </div>
-                            <div className={`p-3 sm:p-4 rounded-2xl ${stat.bgColor} ${stat.color} shadow-sm shrink-0`}>
-                                <stat.icon size={24} />
+                            <div className={`order-1 sm:order-2 p-2 sm:p-4 rounded-lg sm:rounded-2xl ${stat.bgColor} ${stat.color} shadow-sm shrink-0`}>
+                                <stat.icon size={16} className="sm:w-6 sm:h-6" />
                             </div>
                         </div>
                     </div>
@@ -100,13 +100,13 @@ export default function Analytics() {
             </div>
 
             {/* Charts Section */}
-            <div className="grid gap-8 md:grid-cols-2">
-                <div className="p-6 sm:p-8 bg-white dark:bg-dark-surface rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                        <h3 className="text-lg font-heading font-black text-primary dark:text-dark-primary flex items-center gap-2">
-                            <Calendar size={20} className="text-action" /> Completion Rate
+            <div className="grid gap-4 sm:gap-8 md:grid-cols-2">
+                <div className="p-5 sm:p-8 bg-white dark:bg-dark-surface rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark">
+                    <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
+                        <h3 className="text-base sm:text-lg font-heading font-black text-primary dark:text-dark-primary flex items-center gap-2">
+                            <Calendar size={18} className="text-action sm:w-5 sm:h-5" /> Completion Rate
                         </h3>
-                        <span className="text-[10px] font-black text-secondary uppercase tracking-widest bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg w-fit">Last 7 Days</span>
+                        <span className="text-[8px] sm:text-[10px] font-black text-secondary uppercase tracking-widest bg-surface dark:bg-gray-800 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg w-fit">7 Days</span>
                     </div>
                     <div className="h-64 sm:h-72 w-full">
                         <ResponsiveContainer width="100%" height="100%">
