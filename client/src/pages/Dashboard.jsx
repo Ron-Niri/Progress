@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import Skeleton from '../components/Skeleton';
+import motivationData from '../data/motivation.json';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -68,6 +69,16 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  const [dailyQuote, setDailyQuote] = useState({ text: "Discipline equals freedom.", author: "Jocko Willink" });
+
+  useEffect(() => {
+    if (motivationData?.quotes?.length > 0) {
+      const quotes = motivationData.quotes;
+      const random = quotes[Math.floor(Math.random() * quotes.length)];
+      setDailyQuote(random);
+    }
+  }, []);
 
   const handleCheckHabit = async (id) => {
     try {
@@ -152,7 +163,7 @@ export default function Dashboard() {
                 <Skeleton key={i} className="h-24 rounded-3xl" />
               ))
             ) : (
-              data?.habits?.slice(0, 6).map((habit) => (
+              (data?.habits || []).slice(0, 6).map((habit) => (
                 <div 
                   key={habit._id} 
                   className={`p-6 rounded-3xl border transition-all flex items-center justify-between group ${
@@ -227,8 +238,23 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Sidebar: Social & Achievements */}
-        <div className="space-y-10">
+        {/* Sidebar: Social & Motivation */}
+        <div className="space-y-6 sm:space-y-10">
+          <div className="p-6 sm:p-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-[2rem] sm:rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
+              <Zap className="absolute -top-4 -right-4 p-8 text-white/10 group-hover:scale-125 transition-transform duration-700" size={120} />
+              <div className="relative z-10">
+                <h3 className="text-lg font-heading font-bold mb-4 flex items-center gap-2">
+                  <Flame size={20} className="text-orange-200" /> Daily Fuel
+                </h3>
+                <p className="text-sm sm:text-lg font-black leading-tight mb-6">
+                  "{dailyQuote?.text || "Discipline equals freedom."}"
+                </p>
+                <Link to="/motivation" className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                  Get Fueled <ArrowRight size={14} />
+                </Link>
+              </div>
+          </div>
+
           <div className="p-8 bg-gradient-to-br from-primary via-slate-900 to-black rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
               <Zap className="absolute top-0 right-0 p-12 text-white/5 group-hover:scale-125 transition-transform duration-700" size={160} />
               <h3 className="text-xl font-heading font-bold mb-6 flex items-center gap-2 relative z-10">

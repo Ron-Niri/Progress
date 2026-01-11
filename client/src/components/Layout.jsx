@@ -14,7 +14,8 @@ import {
   Sun, 
   User,
   Menu,
-  X
+  X,
+  Zap
 } from 'lucide-react';
 import Logo from './Logo';
 
@@ -30,12 +31,13 @@ export default function Layout({ children }) {
     { name: 'Goals', href: '/goals', icon: Target },
     { name: 'Journal', href: '/journal', icon: BookOpen },
     { name: 'Analytics', href: '/analytics', icon: BarChart2 },
+    { name: 'Motivation', href: '/motivation', icon: Zap },
     { name: 'Profile', href: '/profile', icon: User },
     { name: 'Settings', href: '/settings', icon: SettingsIcon },
   ];
 
   return (
-    <div className="h-screen bg-background dark:bg-dark-background flex transition-colors overflow-hidden">
+    <div className="min-h-screen bg-background dark:bg-dark-background flex transition-colors overflow-hidden">
       {/* Sidebar for Desktop */}
       <aside className="w-72 bg-white dark:bg-dark-surface border-r border-gray-100 dark:border-gray-700 hidden lg:flex flex-col transition-colors sticky top-0 h-screen">
         <div className="p-8 flex items-center justify-between">
