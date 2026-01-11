@@ -87,7 +87,7 @@ export default function Layout({ children }) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Mobile Mini Header */}
-        <div className="lg:hidden sticky top-0 z-40 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 p-4 flex items-center justify-between">
+        <div className="lg:hidden sticky top-0 z-40 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 px-4 pt-[env(safe-area-inset-top,1rem)] pb-4 flex items-center justify-between">
             <Logo className="scale-90 origin-left" />
             <div className="flex items-center gap-2">
               <button 
@@ -112,7 +112,7 @@ export default function Layout({ children }) {
         </main>
 
         {/* Bottom Tab Bar for Mobile */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-dark-surface/90 backdrop-blur-lg border-t border-gray-100 dark:border-gray-700 px-6 py-3 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-dark-surface/90 backdrop-blur-lg border-t border-gray-100 dark:border-gray-700 px-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:pb-3 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
            {navigation.slice(0, 5).map((item) => {
              const isActive = location.pathname === item.href;
              return (
