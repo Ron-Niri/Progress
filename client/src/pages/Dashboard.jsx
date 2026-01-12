@@ -164,8 +164,8 @@ export default function Dashboard() {
             <span className="px-2 py-0.5 bg-action/10 text-action text-[8px] sm:text-[10px] font-black uppercase tracking-widest rounded-full">Evolution</span>
             <span className="text-secondary dark:text-dark-secondary text-[10px] sm:text-xs font-bold">{format(new Date(), 'EEEE, MMMM do')}</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-heading font-black text-primary dark:text-dark-primary leading-tight">
-            {getGreeting()}, <span className="text-action">{user?.username}</span>
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-heading font-black text-primary dark:text-dark-primary leading-tight tracking-tight">
+            {getGreeting()}, <br className="sm:hidden" /><span className="text-action">{user?.username}</span>
           </h1>
         </div>
         
