@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import { TrendingUp, Target, CheckCircle, BookOpen, Activity, Zap, Award, Calendar } from 'lucide-react';
 
@@ -8,6 +9,7 @@ export default function Analytics() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const { darkMode } = useTheme();
+    const { user } = useAuth();
 
     useEffect(() => {
         fetchStats();
