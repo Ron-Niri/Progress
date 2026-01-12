@@ -100,7 +100,7 @@ router.post('/verify', async (req, res) => {
     jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '30d' }, (err, token) => {
       if (err) throw err;
       setTokenCookie(res, token);
-      res.json({ token, user: { id: user.id, username: user.username, email: user.email, xp: user.xp, level: user.level, preferences: user.preferences }, msg: 'Email verified successfully' });
+      res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, preferences: user.preferences }, msg: 'Email verified successfully' });
     });
   } catch (err) {
     console.error(err.message);
@@ -174,7 +174,7 @@ router.post('/login', async (req, res) => {
     jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '30d' }, (err, token) => {
       if (err) throw err;
       setTokenCookie(res, token);
-      res.json({ token, user: { id: user.id, username: user.username, email: user.email, xp: user.xp, level: user.level, preferences: user.preferences } });
+      res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, xp: user.xp, level: user.level, preferences: user.preferences } });
     });
   } catch (err) {
     console.error(err.message);

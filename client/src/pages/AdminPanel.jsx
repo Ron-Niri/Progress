@@ -13,7 +13,9 @@ import {
   Clock,
   RefreshCw,
   Database,
-  Activity
+  Activity,
+  Plus,
+  Sparkles
 } from 'lucide-react';
 
 export default function AdminPanel() {
@@ -25,10 +27,56 @@ export default function AdminPanel() {
   const [testEmailResult, setTestEmailResult] = useState(null);
   const [reminderResult, setReminderResult] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [newTemplate, setNewTemplate] = useState({
+    title: '',
+    description: '',
+    category: 'health',
+    icon: '✓',
+    color: '#10B981',
+    frequency: 'daily',
+    tags: ''
+  });
 
   useEffect(() => {
     fetchAdminData();
+    fetchTemplates();
   }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      const res = await api.get('/habits/templates');
+      setTemplates(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateTemplate = async (e) => {
+    e.preventDefault();
+    setProcessing(true);
+    try {
+      const templateData = {
+        ...newTemplate,
+        tags: newTemplate.tags.split(',').map(t => t.trim()).filter(t => t)
+      };
+      await api.post('/habits/templates', templateData);
+      setNewTemplate({
+        title: '',
+        description: '',
+        category: 'health',
+        icon: '✓',
+        color: '#10B981',
+        frequency: 'daily',
+        tags: ''
+      });
+      fetchTemplates();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   const fetchAdminData = async () => {
     try {
@@ -245,6 +293,119 @@ export default function AdminPanel() {
               </button>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Template Manager */}
+      <div className="bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700 shadow-soft p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl text-action">
+              <Sparkles size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-heading font-black text-primary dark:text-dark-primary">Template Manager</h3>
+              <p className="text-xs text-secondary dark:text-dark-secondary">Global habit templates available to all users</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Create Form */}
+          <div className="lg:col-span-1 p-6 bg-surface/50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+            <h4 className="text-sm font-black text-primary dark:text-dark-primary uppercase tracking-widest mb-6">Create New Template</h4>
+            <form onSubmit={handleCreateTemplate} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-secondary uppercase tracking-widest block mb-1.5 ml-1">Title</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="e.g., Morning Run"
+                  className="w-full px-4 py-2.5 bg-white dark:bg-dark-background border border-gray-200 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-action transition-all text-sm"
+                  value={newTemplate.title}
+                  onChange={e => setNewTemplate({...newTemplate, title: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-secondary uppercase tracking-widest block mb-1.5 ml-1">Icon & Color</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text"
+                    required
+                    placeholder="🔥"
+                    className="w-16 px-4 py-2.5 bg-white dark:bg-dark-background border border-gray-200 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-action transition-all text-sm text-center font-bold"
+                    value={newTemplate.icon}
+                    onChange={e => setNewTemplate({...newTemplate, icon: e.target.value})}
+                  />
+                  <input 
+                    type="color"
+                    className="h-10 w-full p-1 bg-white dark:bg-dark-background border border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer"
+                    value={newTemplate.color}
+                    onChange={e => setNewTemplate({...newTemplate, color: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-secondary uppercase tracking-widest block mb-1.5 ml-1">Category</label>
+                <select 
+                  className="w-full px-4 py-2.5 bg-white dark:bg-dark-background border border-gray-200 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-action transition-all text-sm"
+                  value={newTemplate.category}
+                  onChange={e => setNewTemplate({...newTemplate, category: e.target.value})}
+                >
+                  <option value="health">Health & Fitness</option>
+                  <option value="productivity">Productivity</option>
+                  <option value="learning">Learning</option>
+                  <option value="wellness">Wellness</option>
+                  <option value="social">Social</option>
+                  <option value="finance">Finance</option>
+                  <option value="routine">Routine</option>
+                  <option value="creativity">Creativity</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-secondary uppercase tracking-widest block mb-1.5 ml-1">Tags (comma separated)</label>
+                <input 
+                  type="text"
+                  placeholder="fitness, morning, health"
+                  className="w-full px-4 py-2.5 bg-white dark:bg-dark-background border border-gray-200 dark:border-gray-600 rounded-xl outline-none focus:ring-2 focus:ring-action transition-all text-sm"
+                  value={newTemplate.tags}
+                  onChange={e => setNewTemplate({...newTemplate, tags: e.target.value})}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={processing}
+                className="w-full py-3 bg-action text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all disabled:opacity-50"
+              >
+                {processing ? <RefreshCw size={18} className="animate-spin" /> : <Plus size={18} />}
+                Create Template
+              </button>
+            </form>
+          </div>
+
+          {/* List Section */}
+          <div className="lg:col-span-2 space-y-4 max-h-[600px] overflow-auto pr-2">
+            <h4 className="text-sm font-black text-primary dark:text-dark-primary uppercase tracking-widest mb-4">Existing Templates ({templates.length})</h4>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {templates.map(template => (
+                <div key={template._id} className="p-4 bg-surface dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-sm"
+                    style={{ backgroundColor: `${template.color}15`, color: template.color }}
+                  >
+                    {template.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm text-primary dark:text-dark-primary truncate">{template.title}</p>
+                    <p className="text-[10px] text-secondary uppercase tracking-wider font-bold mt-0.5">{template.category}</p>
+                  </div>
+                  <div className="text-[10px] font-black text-action bg-action/10 px-2 py-1 rounded-lg">
+                    {template.popularity} uses
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

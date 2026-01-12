@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import HabitTemplate from './models/HabitTemplate.js';
+import GoalTemplate from './models/GoalTemplate.js';
 
 dotenv.config();
 
@@ -31,7 +32,54 @@ const templates = [
   { title: 'Clean for 15 Minutes', description: 'Maintain a tidy space', category: 'routine', icon: '🧹', color: '#10B981', frequency: 'daily', tags: ['organization', 'routine'] },
   { title: 'No Caffeine After 2 PM', description: 'Better sleep hygiene', category: 'health', icon: '☕', color: '#F59E0B', frequency: 'daily', tags: ['sleep', 'health'] },
   { title: 'Stretch', description: '10 minutes of stretching', category: 'health', icon: '🤸', color: '#EF4444', frequency: 'daily', tags: ['flexibility', 'health'] },
-  { title: 'Track Expenses', description: 'Log daily spending', category: 'finance', icon: '💰', color: '#10B981', frequency: 'daily', tags: ['finance', 'budgeting'] }
+  { title: 'Track Expenses', description: 'Log daily spending', category: 'finance', icon: '💰', color: '#10B981', frequency: 'daily', tags: ['finance', 'budgeting'] },
+  
+  // New Templates
+  { title: 'Deep Work Session', description: '90 minutes of focused, uninterrupted work', category: 'productivity', icon: '🧠', color: '#EF4444', frequency: 'daily', tags: ['focus', 'productivity'] },
+  { title: 'Intermittent Fasting', description: 'Maintain your fasting window', category: 'health', icon: '⏱️', color: '#F59E0B', frequency: 'daily', tags: ['health', 'diet'] },
+  { title: 'Save $10 Today', description: 'Put aside money for your future', category: 'finance', icon: '🐖', color: '#10B981', frequency: 'daily', tags: ['finance', 'savings'] },
+  { title: 'Spanish Vocab', description: 'Learn 10 new Spanish words', category: 'learning', icon: '🇪🇸', color: '#EF4444', frequency: 'daily', tags: ['language', 'learning'] },
+  { title: 'Digital Detox 1h', description: 'Disconnect from all screens for 1 hour', category: 'wellness', icon: '🔌', color: '#3B82F6', frequency: 'daily', tags: ['wellness', 'focus'] },
+  { title: 'Network on LinkedIn', description: 'Make 3 professional connections', category: 'social', icon: '🤝', color: '#06B6D4', frequency: 'daily', tags: ['career', 'social'] },
+  { title: 'Skincare Protocol', description: 'Morning/Evening routine', category: 'routine', icon: '🧴', color: '#EC4899', frequency: 'daily', tags: ['self-care', 'routine'] },
+  { title: 'Push-up Set', description: '3 sets of maximum push-ups', category: 'health', icon: '🏋️', color: '#EF4444', frequency: 'daily', tags: ['fitness', 'strength'] },
+  { title: 'Night Reflection', description: 'Write down 3 wins and 3 goals', category: 'reflection', icon: '🌙', color: '#8B5CF6', frequency: 'daily', tags: ['reflection', 'growth'] },
+];
+
+const goalTemplates = [
+  { 
+    title: '90-Day Body Transformation', 
+    description: 'Complete overhaul of physical health', 
+    category: 'Health', 
+    icon: '🏋️',
+    milestones: [
+      { title: 'First 5kg lost / gained', relativeDays: 30 },
+      { title: 'New personal best in main lift', relativeDays: 60 },
+      { title: 'Final physique check', relativeDays: 90 }
+    ]
+  },
+  { 
+    title: 'Launch a Side Project', 
+    description: 'Go from idea to first customer', 
+    category: 'Productivity', 
+    icon: '🚀',
+    milestones: [
+      { title: 'MVP Completed', relativeDays: 14 },
+      { title: 'Beta Testing Started', relativeDays: 30 },
+      { title: 'Public Launch', relativeDays: 45 }
+    ]
+  },
+  { 
+    title: 'Master a New Language (B1)', 
+    description: 'Achieve intermediate conversational fluency', 
+    category: 'Learning', 
+    icon: '🗣️',
+    milestones: [
+      { title: 'First 500 words learned', relativeDays: 20 },
+      { title: 'Can hold 5-min conversation', relativeDays: 50 },
+      { title: 'Passed practice B1 exam', relativeDays: 80 }
+    ]
+  }
 ];
 
 const seedTemplates = async () => {
@@ -41,11 +89,14 @@ const seedTemplates = async () => {
 
     // Clear existing templates
     await HabitTemplate.deleteMany({});
+    await GoalTemplate.deleteMany({});
     console.log('Cleared existing templates');
 
     // Insert new templates
     await HabitTemplate.insertMany(templates);
+    await GoalTemplate.insertMany(goalTemplates);
     console.log(`Inserted ${templates.length} habit templates`);
+    console.log(`Inserted ${goalTemplates.length} goal templates`);
 
     process.exit(0);
   } catch (err) {

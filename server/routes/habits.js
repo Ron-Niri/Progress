@@ -4,6 +4,7 @@ import Habit from '../models/Habit.js';
 import Achievement from '../models/Achievement.js';
 import Activity from '../models/Activity.js';
 import auth from '../middleware/auth.js';
+import admin from '../middleware/admin.js';
 import { awardXP, XP_VALUES } from '../utils/gamification.js';
 
 const router = express.Router();
@@ -15,6 +16,29 @@ router.get('/templates', auth, async (req, res) => {
   try {
     const templates = await HabitTemplate.find().sort({ popularity: -1 });
     res.json(templates);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   POST api/habits/templates
+// @desc    Add a habit template
+// @access  Admin
+router.post('/templates', [auth, admin], async (req, res) => {
+  try {
+    const { title, description, category, icon, color, frequency, tags } = req.body;
+    const newTemplate = new HabitTemplate({
+      title,
+      description,
+      category,
+      icon,
+      color,
+      frequency,
+      tags
+    });
+    const template = await newTemplate.save();
+    res.json(template);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
