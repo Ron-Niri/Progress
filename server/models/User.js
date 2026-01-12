@@ -20,10 +20,13 @@ const UserSchema = new mongoose.Schema({
     emailNotifications: { type: Boolean, default: true },
     habitReminders: { type: Boolean, default: true },
     goalReminders: { type: Boolean, default: true },
+    gamificationEnabled: { type: Boolean, default: true },
     reminderDaysBefore: { type: Number, default: 3 } // Days before deadline to send reminder
   },
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  xp: { type: Number, default: 0 },
+  level: { type: Number, default: 1 },
   createdAt: { type: Date, default: Date.now }
 });
 

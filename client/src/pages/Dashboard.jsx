@@ -26,7 +26,7 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   useEffect(() => {
     if (!user) {
@@ -83,7 +83,10 @@ export default function Dashboard() {
 
   const handleCheckHabit = async (id) => {
     try {
-      await api.put(`/habits/${id}/check`);
+      const res = await api.put(`/habits/${id}/check`);
+      if (res.data.gamification) {
+        refreshUser();
+      }
       fetchDashboardData();
     } catch (err) {
       console.error(err);
@@ -106,6 +109,54 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 sm:space-y-10 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Evolution Tracker (XP & Level) */}
+      {user?.preferences?.gamificationEnabled !== false && (
+        <div className="p-4 sm:p-8 bg-white dark:bg-dark-surface border border-gray-100 dark:border-gray-700 rounded-[2rem] sm:rounded-[3rem] text-primary dark:text-dark-primary shadow-2xl relative overflow-hidden group">
+          <Zap className="absolute top-0 right-0 p-8 sm:p-12 text-slate-200 dark:text-white/5 group-hover:scale-110 transition-transform duration-1000" size={180} />
+          
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <div className="w-16 h-16 sm:w-24 sm:h-24 bg-action rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center text-3xl sm:text-5xl font-black text-white shadow-lg shadow-action/20">
+                  {user?.level || 1}
+                </div>
+                <div className="absolute -bottom-2 -right-2 bg-accent text-[8px] sm:text-[10px] font-black text-white px-2 py-1 rounded-lg uppercase tracking-widest shadow-lg">
+                  Level
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-[10px] sm:text-xs font-black text-secondary dark:text-slate-400 uppercase tracking-[3px] mb-1 sm:mb-2">Operator Standing</p>
+                <h2 className="text-xl sm:text-3xl font-black flex items-center gap-3">
+                  {user?.level >= 10 ? 'Elite Architect' : user?.level >= 5 ? 'Senior Tracker' : 'Initiate Resident'}
+                  <Sparkles className="text-action" size={24} />
+                </h2>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-[10px] sm:text-xs font-bold text-secondary dark:text-slate-400">XP: {user?.xp || 0}</span>
+                  <div className="h-1 w-1 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+                  <span className="text-[10px] sm:text-xs font-bold text-action">Next Level: {Math.floor(100 * Math.pow(user?.level || 1, 1.5))} XP</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 max-w-md w-full space-y-3">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] font-black uppercase tracking-widest text-secondary dark:text-slate-400">Experience Progress</span>
+                <span className="text-xs font-black text-action">
+                  {Math.round(((user?.xp || 0) / Math.floor(100 * Math.pow(user?.level || 1, 1.5))) * 100)}%
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 dark:bg-white/10 rounded-full h-3 sm:h-4 p-1 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-action to-blue-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  style={{ width: `${Math.min(100, Math.round(((user?.xp || 0) / Math.floor(100 * Math.pow(user?.level || 1, 1.5))) * 100))}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header & Quote */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 sm:gap-8">
         <div className="flex flex-col gap-1">
@@ -274,32 +325,34 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className="p-8 bg-gradient-to-br from-primary via-slate-900 to-black rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
-              <Zap className="absolute top-0 right-0 p-12 text-white/5 group-hover:scale-125 transition-transform duration-700" size={160} />
-              <h3 className="text-xl font-heading font-bold mb-6 flex items-center gap-2 relative z-10">
-                <Sparkles size={20} className="text-orange-400" /> Recent Trophies
-              </h3>
-              <div className="space-y-6 relative z-10">
-                 {loading && !data ? (
-                   [...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 rounded-2xl bg-white/5" />)
-                 ) : (
-                   data?.achievements?.map((ach) => (
-                     <div key={ach._id} className="flex gap-4 group/item">
-                        <div className="text-3xl p-3 bg-white/10 rounded-2xl group-hover/item:scale-110 transition-transform">{ach.icon}</div>
-                        <div>
-                          <p className="font-bold text-sm">{ach.title}</p>
-                          <p className="text-xs text-slate-400 mt-1">{ach.description}</p>
-                        </div>
+          {user?.preferences?.gamificationEnabled !== false && (
+            <div className="p-8 bg-gradient-to-br from-primary via-slate-900 to-black rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
+                <Zap className="absolute top-0 right-0 p-12 text-white/5 group-hover:scale-125 transition-transform duration-700" size={160} />
+                <h3 className="text-xl font-heading font-bold mb-6 flex items-center gap-2 relative z-10">
+                  <Sparkles size={20} className="text-orange-400" /> Recent Trophies
+                </h3>
+                <div className="space-y-6 relative z-10">
+                   {loading && !data ? (
+                     [...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 rounded-2xl bg-white/5" />)
+                   ) : (
+                     data?.achievements?.map((ach) => (
+                       <div key={ach._id} className="flex gap-4 group/item">
+                          <div className="text-3xl p-3 bg-white/10 rounded-2xl group-hover/item:scale-110 transition-transform">{ach.icon}</div>
+                          <div>
+                            <p className="font-bold text-sm">{ach.title}</p>
+                            <p className="text-xs text-slate-400 mt-1">{ach.description}</p>
+                          </div>
+                       </div>
+                     ))
+                   )}
+                   {data?.achievements?.length === 0 && !loading && (
+                     <div className="py-4">
+                       <p className="text-sm text-slate-400 italic">No trophies unlocked yet. Keep pushing your limits!</p>
                      </div>
-                   ))
-                 )}
-                 {data?.achievements?.length === 0 && !loading && (
-                   <div className="py-4">
-                     <p className="text-sm text-slate-400 italic">No trophies unlocked yet. Keep pushing your limits!</p>
-                   </div>
-                 )}
-              </div>
-          </div>
+                   )}
+                </div>
+            </div>
+          )}
 
           <div className="p-8 bg-white dark:bg-dark-surface rounded-[2.5rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark">
               <h3 className="text-xl font-heading font-bold mb-6 text-primary dark:text-dark-primary flex items-center gap-2">

@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { Plus, Trash2, Edit2, CheckCircle2, Circle, Target, Calendar, Clock, AlertCircle, X, ChevronRight } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
+import { useAuth } from '../context/AuthContext';
 
 export default function Goals() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { refreshUser } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newGoal, setNewGoal] = useState({ 
@@ -45,7 +47,8 @@ export default function Goals() {
       if (editingId) {
         await api.put(`/goals/${editingId}`, payload);
       } else {
-        await api.post('/goals', payload);
+        const res = await api.post('/goals', payload);
+        if (res.data.gamification) refreshUser();
       }
       setNewGoal({ title: '', description: '', targetDate: '', category: 'General', subGoals: [], milestones: [] });
       setShowForm(false);
@@ -82,7 +85,8 @@ export default function Goals() {
       const newStatus = goal.status === 'completed' ? 'pending' : 'completed';
       const newProgress = newStatus === 'completed' ? 100 : 0;
       try {
-          await api.put(`/goals/${goal._id}`, { status: newStatus, progress: newProgress });
+          const res = await api.put(`/goals/${goal._id}`, { status: newStatus, progress: newProgress });
+          if (res.data.gamification) refreshUser();
           fetchGoals();
       } catch (err) {
           console.error(err);

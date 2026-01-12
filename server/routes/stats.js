@@ -61,6 +61,27 @@ router.get('/', auth, async (req, res) => {
       });
     }
 
+    // Heatmap data (last 30 days for now, to keep response lean but useful)
+    const heatmapData = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+      
+      let count = 0;
+      habits.forEach(h => {
+        if (h.completedDates.some(d => new Date(d) >= date && new Date(d) < nextDate)) count++;
+      });
+      
+      heatmapData.push({
+        date: date.toISOString().split('T')[0],
+        count
+      });
+    }
+
     res.json({
       habits: {
         total: totalHabits,
@@ -76,7 +97,8 @@ router.get('/', auth, async (req, res) => {
       journal: {
         totalEntries: totalJournalEntries
       },
-      weeklyData
+      weeklyData,
+      heatmapData
     });
   } catch (err) {
     console.error(err.message);

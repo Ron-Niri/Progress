@@ -3,6 +3,7 @@ import Journal from '../models/Journal.js';
 import Achievement from '../models/Achievement.js';
 import Activity from '../models/Activity.js';
 import auth from '../middleware/auth.js';
+import { awardXP, XP_VALUES } from '../utils/gamification.js';
 
 const router = express.Router();
 
@@ -69,7 +70,9 @@ router.post('/', auth, async (req, res) => {
       }).save();
     }
 
-    res.json(entry);
+    const gamification = await awardXP(req.user.id, XP_VALUES.JOURNAL_ENTRY);
+    
+    res.json({ ...entry.toObject(), gamification });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

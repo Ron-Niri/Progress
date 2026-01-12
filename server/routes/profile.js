@@ -65,7 +65,7 @@ router.put('/me', auth, async (req, res) => {
 // @desc    Update user preferences
 // @access  Private
 router.put('/preferences', auth, async (req, res) => {
-  const { darkMode, emailNotifications, habitReminders } = req.body;
+  const { darkMode, emailNotifications, habitReminders, goalReminders, gamificationEnabled, reminderDaysBefore } = req.body;
   
   try {
     const user = await User.findById(req.user.id);
@@ -73,6 +73,9 @@ router.put('/preferences', auth, async (req, res) => {
     if (darkMode !== undefined) user.preferences.darkMode = darkMode;
     if (emailNotifications !== undefined) user.preferences.emailNotifications = emailNotifications;
     if (habitReminders !== undefined) user.preferences.habitReminders = habitReminders;
+    if (goalReminders !== undefined) user.preferences.goalReminders = goalReminders;
+    if (gamificationEnabled !== undefined) user.preferences.gamificationEnabled = gamificationEnabled;
+    if (reminderDaysBefore !== undefined) user.preferences.reminderDaysBefore = reminderDaysBefore;
 
     await user.save();
     

@@ -4,6 +4,7 @@ import GoalTemplate from '../models/GoalTemplate.js';
 import Achievement from '../models/Achievement.js';
 import Activity from '../models/Activity.js';
 import auth from '../middleware/auth.js';
+import { awardXP, XP_VALUES } from '../utils/gamification.js';
 
 const router = express.Router();
 
@@ -58,8 +59,10 @@ router.post('/', auth, async (req, res) => {
       description: `Committed to a new mission: ${goal.title}`,
       metadata: { referenceId: goal._id, icon: '🎯' }
     }).save();
-
-    res.json(goal);
+    
+    const gamification = await awardXP(req.user.id, XP_VALUES.GOAL_CREATE);
+    
+    res.json({ ...goal.toObject(), gamification });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -130,7 +133,13 @@ router.put('/:id', auth, async (req, res) => {
         if (progress !== undefined) goal.progress = progress;
 
         await goal.save();
-        res.json(goal);
+        
+        let gamification = null;
+        if (status === 'completed') {
+            gamification = await awardXP(req.user.id, XP_VALUES.GOAL_COMPLETE);
+        }
+        
+        res.json({ ...goal.toObject(), gamification });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

@@ -4,6 +4,7 @@ import Habit from '../models/Habit.js';
 import Achievement from '../models/Achievement.js';
 import Activity from '../models/Activity.js';
 import auth from '../middleware/auth.js';
+import { awardXP, XP_VALUES } from '../utils/gamification.js';
 
 const router = express.Router();
 
@@ -147,7 +148,10 @@ router.post('/', auth, async (req, res) => {
       metadata: { referenceId: habit._id, icon: habit.icon }
     }).save();
     
-    res.json(habit);
+    // Award XP for starting a new habit
+    const gamification = await awardXP(req.user.id, XP_VALUES.GOAL_CREATE); // Using GOAL_CREATE value for habit start
+    
+    res.json({ ...habit.toObject(), gamification });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -256,6 +260,16 @@ router.put('/:id/check', auth, async (req, res) => {
                 description: `Successfully completed: ${habit.title}`,
                 metadata: { referenceId: habit._id, icon: habit.icon, value: habit.streak }
             }).save();
+
+            // Award XP for completion
+            let xpToAward = XP_VALUES.HABIT_COMPLETE;
+            if (habit.streak === 7) xpToAward += XP_VALUES.STREAK_7;
+            if (habit.streak === 30) xpToAward += XP_VALUES.STREAK_30;
+            
+            const gamification = await awardXP(req.user.id, xpToAward);
+            
+            await habit.save();
+            return res.json({ ...habit.toObject(), gamification });
         }
 
         await habit.save();

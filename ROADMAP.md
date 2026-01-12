@@ -82,8 +82,8 @@
 
 ### Gamification
 - [x] Achievement badges
-- [ ] Experience points (XP) system
-- [ ] Level progression
+- [x] Experience points (XP) system (Gamification)
+- [x] Level progression
 - [ ] Reward unlocks
 - [x] Streak milestones
 - [ ] Daily/weekly challenges
@@ -91,7 +91,7 @@
 ### Advanced Analytics
 - [ ] Monthly/yearly reports
 - [ ] Habit correlation analysis
-- [ ] Productivity heatmaps
+- [x] Productivity heatmaps
 - [ ] Export data (CSV, PDF)
 - [ ] Custom date range filtering
 - [ ] Comparison with previous periods

@@ -23,7 +23,7 @@ import {
 
 export default function Settings() {
   const { darkMode, toggleDarkMode } = useTheme();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   
   const [profile, setProfile] = useState({
@@ -37,6 +37,7 @@ export default function Settings() {
     emailNotifications: true,
     habitReminders: true,
     goalReminders: true,
+    gamificationEnabled: true,
     reminderDaysBefore: 3
   });
 
@@ -68,6 +69,7 @@ export default function Settings() {
         emailNotifications: res.data.preferences?.emailNotifications ?? true,
         habitReminders: res.data.preferences?.habitReminders ?? true,
         goalReminders: res.data.preferences?.goalReminders ?? true,
+        gamificationEnabled: res.data.preferences?.gamificationEnabled ?? true,
         reminderDaysBefore: res.data.preferences?.reminderDaysBefore ?? 3
       });
       setLoading(false);
@@ -98,6 +100,7 @@ export default function Settings() {
       const newPrefs = { ...preferences, ...updates };
       await api.put('/profile/preferences', newPrefs);
       setPreferences(newPrefs);
+      await refreshUser(); // Sync with global state
       showSuccess();
     } catch (err) {
       setError('Failed to update preferences');
@@ -358,6 +361,7 @@ export default function Settings() {
                         </div>
                         <div className="flex items-center gap-3">
                           <button
+                            type="button"
                             onClick={() => handleUpdatePreferences({ reminderDaysBefore: Math.max(1, preferences.reminderDaysBefore - 1) })}
                             className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center font-black text-action hover:bg-action hover:text-white transition-all shadow-sm"
                           >
@@ -367,7 +371,8 @@ export default function Settings() {
                             {preferences.reminderDaysBefore}
                           </div>
                           <button
-                            onClick={() => handleUpdatePreferences({ reminderDaysBefore: Math.min(14, preferences.reminderDaysBefore + 1) })}
+                            type="button"
+                            onClick={() => handleUpdatePreferences({ reminderDaysBefore: preferences.reminderDaysBefore + 1 })}
                             className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center font-black text-action hover:bg-action hover:text-white transition-all shadow-sm"
                           >
                             +
@@ -378,6 +383,46 @@ export default function Settings() {
                   )}
                 </div>
               </section>
+
+              {/* Gamification Core - Made Bolder */}
+              <div className="bg-white dark:bg-dark-surface rounded-[2.5rem] p-8 sm:p-12 border border-gray-100 dark:border-gray-700 shadow-xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-1000">
+                  <Zap size={200} />
+                </div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 bg-action/10 rounded-2xl flex items-center justify-center text-action">
+                      <Zap size={32} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-heading font-black text-primary dark:text-dark-primary uppercase tracking-tight text-left">Experience Protocol</h3>
+                      <p className="text-secondary dark:text-dark-secondary text-sm font-medium text-left">The psychological engine of your evolution.</p>
+                    </div>
+                  </div>
+
+                  <div className={`p-8 rounded-[2rem] border transition-all duration-500 ${preferences.gamificationEnabled ? 'bg-gradient-to-br from-action/5 to-transparent border-action/20 shadow-lg shadow-action/5' : 'bg-slate-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-800 opacity-60'}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8">
+                      <div className="max-w-md text-left">
+                        <p className="font-black text-primary dark:text-dark-primary uppercase tracking-[2px] text-xs mb-3">Gamification Engine</p>
+                        <h4 className="text-lg font-bold text-primary dark:text-dark-primary mb-2">Enable Meta-Progression</h4>
+                        <p className="text-sm text-secondary dark:text-dark-secondary font-medium leading-relaxed">
+                          Activating this protocol enables XP points, Leveling, Status Titles, Heatmaps, and Achievement Trophies. 
+                          Disabling it will <span className="text-primary dark:text-dark-primary font-bold">hide all traces</span> of the experience system from your Dashboard and Analytics.
+                        </p>
+                      </div>
+                      
+                      <button 
+                        type="button"
+                        onClick={() => handleUpdatePreferences({ gamificationEnabled: !preferences.gamificationEnabled })}
+                        className={`relative w-24 h-12 rounded-full transition-all duration-500 flex items-center p-1.5 shrink-0 ${preferences.gamificationEnabled ? 'bg-action shadow-lg shadow-action/30' : 'bg-gray-300 dark:bg-gray-700'}`}
+                      >
+                        <div className={`w-9 h-9 bg-white rounded-full shadow-md transition-all duration-500 transform ${preferences.gamificationEnabled ? 'translate-x-[3.25rem]' : 'translate-x-0'}`}></div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

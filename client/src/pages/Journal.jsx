@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { Plus, Trash2, Edit2, X, Check, BookOpen, Search, Info } from 'lucide-react';
 import { format } from 'date-fns';
+import { useAuth } from '../context/AuthContext';
 
 export default function Journal() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const { refreshUser } = useAuth();
   const [editingId, setEditingId] = useState(null);
   const [newEntry, setNewEntry] = useState({ content: '', mood: 'neutral', tags: '' });
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,7 +38,8 @@ export default function Journal() {
       if (editingId) {
         await api.put(`/journal/${editingId}`, { ...newEntry, tags: tagsArray });
       } else {
-        await api.post('/journal', { ...newEntry, tags: tagsArray });
+        const res = await api.post('/journal', { ...newEntry, tags: tagsArray });
+        if (res.data.gamification) refreshUser();
       }
       
       setNewEntry({ content: '', mood: 'neutral', tags: '' });

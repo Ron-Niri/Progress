@@ -196,6 +196,50 @@ export default function Analytics() {
                 </div>
             </div>
 
+            {/* Productivity Heatmap */}
+            {user?.preferences?.gamificationEnabled !== false && (
+                <div className="p-8 bg-white dark:bg-dark-surface rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-soft dark:shadow-soft-dark">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-lg font-heading font-black text-primary dark:text-dark-primary flex items-center gap-2">
+                            <Activity size={20} className="text-action" /> Productivity Heatmap
+                        </h3>
+                        <span className="text-[10px] font-black text-secondary uppercase tracking-widest bg-surface dark:bg-gray-800 px-3 py-1.5 rounded-lg">Last 30 Days</span>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 sm:gap-4 overflow-x-auto pb-4">
+                        {stats.heatmapData ? (
+                            stats.heatmapData.map((day, i) => {
+                                let colorClass = 'bg-slate-100 dark:bg-gray-800';
+                                if (day.count > 0) colorClass = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600';
+                                if (day.count > 2) colorClass = 'bg-blue-300 dark:bg-blue-700 text-white';
+                                if (day.count > 4) colorClass = 'bg-action text-white';
+                                
+                                return (
+                                    <div 
+                                        key={day.date} 
+                                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold transition-all hover:scale-110 cursor-help ${colorClass}`}
+                                        title={`${day.date}: ${day.count} habits completed`}
+                                    >
+                                        {day.count > 0 ? day.count : ''}
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <p className="text-secondary opacity-50 italic">No heatmap data available.</p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-4 mt-6 text-[10px] font-bold text-secondary uppercase tracking-widest">
+                        <span>Intensity:</span>
+                        <div className="flex gap-1.5">
+                            <div className="w-3 h-3 rounded bg-slate-100 dark:bg-gray-800"></div>
+                            <div className="w-3 h-3 rounded bg-blue-100 dark:bg-blue-900/30"></div>
+                            <div className="w-3 h-3 rounded bg-blue-300"></div>
+                            <div className="w-3 h-3 rounded bg-action"></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Performance Metrics */}
             <div className="grid gap-8 md:grid-cols-2 shadow-soft">
                 <div className="p-8 bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700">
