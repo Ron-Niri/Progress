@@ -3,7 +3,7 @@ import api from '../utils/api';
 import { 
   Plus, Trash2, Edit2, CheckCircle2, Circle, Target, Calendar, Clock, 
   AlertCircle, X, Hash, Link as LinkIcon, Users, 
-  Layers, Lightbulb, ArrowRight, Save, Trash
+  Layers, Lightbulb, ArrowRight, Save, Trash, Loader2
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +17,11 @@ export default function Goals() {
   const { refreshUser } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [userInvitations, setUserInvitations] = useState([]);
+  const [userSearch, setUserSearch] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [inviting, setInviting] = useState(false);
   
   const initialGoalState = { 
     title: '', 
@@ -51,6 +56,65 @@ export default function Goals() {
   // For manual or background refreshes that might happen specifically here
   const fetchGoals = async () => {
     await refreshSilent();
+    fetchUserInvitations();
+  };
+
+  const fetchUserInvitations = async () => {
+    try {
+      const res = await api.get('/goals/invitations');
+      setUserInvitations(res.data);
+    } catch (err) {
+      console.error('Failed to fetch invitations:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserInvitations();
+  }, []);
+
+  useEffect(() => {
+    if (userSearch.length > 2) {
+      const delayDebounceFn = setTimeout(async () => {
+        setSearching(true);
+        try {
+          const res = await api.get(`/profile/search/users?q=${userSearch}`);
+          setSearchResults(res.data);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setSearching(false);
+        }
+      }, 500);
+
+      return () => clearTimeout(delayDebounceFn);
+    } else {
+      setSearchResults([]);
+    }
+  }, [userSearch]);
+
+  const handleInvite = async (username) => {
+    if (!editingId) return;
+    setInviting(true);
+    try {
+      await api.post(`/goals/${editingId}/invite`, { username });
+      alert(`Invitation sent to ${username}`);
+      setUserSearch('');
+      setSearchResults([]);
+      fetchGoals();
+    } catch (err) {
+      alert(err.response?.data?.msg || 'Failed to send invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleAcceptInvitation = async (token) => {
+    try {
+      await api.post(`/goals/accept/${token}`);
+      fetchGoals();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleOpenModal = (goal = null) => {
@@ -188,6 +252,34 @@ export default function Goals() {
           Set New Goal
         </button>
       </div>
+
+      {/* Pending Invitations Banner */}
+      {userInvitations.length > 0 && (
+        <div className="space-y-4 animate-in slide-in-from-top-4 duration-500">
+           <div className="flex items-center gap-2 px-1">
+             <div className="p-1.5 bg-blue-500/10 rounded-lg text-blue-500">
+               <Users size={16} />
+             </div>
+             <span className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">Incoming Missions ({userInvitations.length})</span>
+           </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userInvitations.map(invite => (
+                <div key={invite._id} className="p-6 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 rounded-[2rem] flex items-center justify-between gap-4 backdrop-blur-sm">
+                   <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1 italic">Invited by @{invite.invitedBy?.username}</p>
+                      <h4 className="text-sm font-black text-primary dark:text-dark-primary truncate">{invite.title}</h4>
+                   </div>
+                   <button 
+                    onClick={() => handleAcceptInvitation(invite.token)} 
+                    className="px-5 py-2.5 bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/30 hover:scale-105 active:scale-95 transition-all shrink-0"
+                   >
+                     Accept
+                   </button>
+                </div>
+              ))}
+           </div>
+        </div>
+      )}
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -492,19 +584,72 @@ export default function Goals() {
               </div>
 
               <div className="pt-6 border-t border-gray-50 dark:border-gray-800/50 grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 px-1">
-                      <Users size={16} className="text-secondary" />
-                      <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Collaborators</label>
-                    </div>
-                    <input 
-                      type="text"
-                      className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-6 py-4 text-xs font-bold text-primary dark:text-dark-primary focus:ring-0 focus:border-action transition-all outline-none"
-                      placeholder="emails..."
-                      value={newGoal.collaboratorsText || ''}
-                      onChange={e => setNewGoal({...newGoal, collaboratorsText: e.target.value})}
-                    />
-                 </div>
+                  <div className="space-y-4">
+                     <div className="flex items-center gap-2 px-1">
+                       <Users size={16} className="text-secondary" />
+                       <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Collaborators</label>
+                     </div>
+                     
+                     {/* Existing Collaborators List */}
+                     {(newGoal.collaboratorsText || '').length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {(newGoal.collaboratorsText || '').split(', ').map((c, i) => (
+                             <div key={i} className="px-3 py-1.5 bg-blue-500/10 text-blue-500 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-2">
+                               <Users size={12} />
+                               {c}
+                             </div>
+                          ))}
+                        </div>
+                     )}
+
+                     {/* Invite Interface - Only for existing goals */}
+                     {editingId ? (
+                       <div className="relative z-50">
+                          <div className="relative">
+                            <input 
+                              type="text"
+                              className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-6 py-4 text-xs font-bold text-primary dark:text-dark-primary focus:ring-0 focus:border-action transition-all outline-none"
+                              placeholder="Search username to invite..."
+                              value={userSearch}
+                              onChange={e => setUserSearch(e.target.value)}
+                            />
+                            {searching && (
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                <Loader2 className="animate-spin text-secondary" size={16} />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Search Results Dropdown */}
+                          {searchResults.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
+                               {searchResults.map(user => (
+                                 <button
+                                   key={user._id}
+                                   type="button"
+                                   onClick={() => handleInvite(user.username)}
+                                   disabled={inviting}
+                                   className="w-full p-4 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all text-left group"
+                                 >
+                                    <div className="w-8 h-8 rounded-full bg-surface dark:bg-gray-700 overflow-hidden">
+                                       <img src={user.profile?.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=random`} alt={user.username} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="text-xs font-black text-primary dark:text-dark-primary group-hover:text-action transition-colors">@{user.username}</p>
+                                      {user.profile?.bio && <p className="text-[10px] text-secondary truncate max-w-[180px]">{user.profile.bio}</p>}
+                                    </div>
+                                    <div className="px-3 py-1 bg-action/10 text-action rounded-lg text-[10px] font-bold uppercase">Invite</div>
+                                 </button>
+                               ))}
+                            </div>
+                          )}
+                       </div>
+                     ) : (
+                       <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
+                          <p className="text-[10px] font-bold text-secondary uppercase tracking-widest">Create goal to enable collaboration</p>
+                       </div>
+                     )}
+                  </div>
                  <div className="space-y-4">
                     <div className="flex items-center gap-2 px-1">
                       <LinkIcon size={16} className="text-secondary" />

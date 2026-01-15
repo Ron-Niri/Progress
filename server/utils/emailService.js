@@ -37,7 +37,7 @@ console.log('📧 SMTP Config initialized:', {
 });
 
 const emailTemplates = {
-  verification: (code, username) => ({
+  verification: (data) => ({
     subject: 'Verify Your Progress Account',
     html: `
       <!DOCTYPE html>
@@ -62,11 +62,11 @@ const emailTemplates = {
             <h1>🚀 Progress</h1>
           </div>
           <div class="content">
-            <h2>Welcome, ${username}!</h2>
+            <h2>Welcome, ${data.username}!</h2>
             <p>Thank you for joining Progress. To complete your registration, please verify your email address using the code below:</p>
             
             <div class="code-box">
-              <div class="code">${code}</div>
+              <div class="code">${data.code}</div>
             </div>
             
             <p>This code will expire in <strong>10 minutes</strong>.</p>
@@ -91,7 +91,7 @@ const emailTemplates = {
     `
   }),
 
-  passwordReset: (code, username) => ({
+  passwordReset: (data) => ({
     subject: 'Reset Your Progress Password',
     html: `
       <!DOCTYPE html>
@@ -116,11 +116,11 @@ const emailTemplates = {
           </div>
           <div class="content">
             <h2>Password Reset Request</h2>
-            <p>Hi ${username},</p>
+            <p>Hi ${data.username},</p>
             <p>We received a request to reset your password. Use the code below to proceed:</p>
             
             <div class="code-box">
-              <div class="code">${code}</div>
+              <div class="code">${data.code}</div>
             </div>
             
             <p>This code will expire in <strong>10 minutes</strong>.</p>
@@ -144,7 +144,7 @@ const emailTemplates = {
     `
   }),
 
-  welcome: (username) => ({
+  welcome: (data) => ({
     subject: 'Welcome to Progress - Let\'s Get Started!',
     html: `
       <!DOCTYPE html>
@@ -167,7 +167,7 @@ const emailTemplates = {
             <h1>🎉 Welcome to Progress!</h1>
           </div>
           <div class="content">
-            <h2>You're all set, ${username}!</h2>
+            <h2>You're all set, ${data.username}!</h2>
             <p>Your account has been verified and you're ready to start your journey to peak potential.</p>
             
             <h3 style="margin-top: 30px;">Here's what you can do:</h3>
@@ -206,6 +206,57 @@ const emailTemplates = {
       </body>
       </html>
     `
+  }),
+  
+  collaborationInvite: (data) => ({
+    subject: `🤝 Collaboration Invite: ${data.goalTitle}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #1E293B; background-color: #FBFBFA; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+          .header { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); padding: 40px 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 600; }
+          .content { padding: 40px 30px; text-align: center; }
+          .goal-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; margin: 24px 0; text-align: left; }
+          .goal-title { font-size: 18px; font-weight: 700; color: #1E293B; margin-bottom: 8px; }
+          .goal-desc { font-size: 14px; color: #64748B; margin-bottom: 0; }
+          .button { display: inline-block; background: #3B82F6; color: white; padding: 16px 40px; text-decoration: none; border-radius: 12px; font-weight: 700; margin: 20px 0; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+          .footer { background: #F1F1EF; padding: 20px 30px; text-align: center; font-size: 12px; color: #6B7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🤝 New Collaboration</h1>
+          </div>
+          <div class="content">
+            <h2>Hey ${data.recipientName}!</h2>
+            <p><strong>${data.inviterName}</strong> has invited you to collaborate on a mission:</p>
+            
+            <div class="goal-card">
+              <div class="goal-title">🎯 ${data.goalTitle}</div>
+              <p class="goal-desc">${data.goalDescription || 'No description provided.'}</p>
+            </div>
+            
+            <p>By accepting, this goal will be added to your active dashboard for shared tracking.</p>
+            
+            <a href="${data.acceptUrl}" class="button">Accept Invitation</a>
+            
+            <p style="margin-top: 30px; color: #6B7280; font-size: 14px;">
+              Ready to win together?<br>
+              The Progress Team
+            </p>
+          </div>
+          <div class="footer">
+            <p>© 2026 Progress App. Peak human collaboration.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
   })
 };
 
@@ -222,7 +273,7 @@ export const sendEmail = async (...args) => {
     templateName = type;
     
     if (emailTemplates[type]) {
-      const template = emailTemplates[type](data?.code || '', data?.username || '');
+      const template = emailTemplates[type](data);
       subject = template.subject;
       html = template.html;
     } else {

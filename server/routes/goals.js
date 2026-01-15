@@ -4,6 +4,9 @@ import GoalTemplate from '../models/GoalTemplate.js';
 import Achievement from '../models/Achievement.js';
 import Activity from '../models/Activity.js';
 import auth from '../middleware/auth.js';
+import User from '../models/User.js';
+import crypto from 'crypto';
+import { sendEmail } from '../utils/emailService.js';
 import { awardXP, XP_VALUES } from '../utils/gamification.js';
 
 const router = express.Router();
@@ -26,7 +29,15 @@ router.get('/templates', auth, async (req, res) => {
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
-    const goals = await Goal.find({ userId: req.user.id }).sort({ targetDate: 1 });
+    const goals = await Goal.find({ 
+      $or: [
+        { userId: req.user.id },
+        { collaborators: req.user.id }
+      ]
+    })
+    .sort({ targetDate: 1 })
+    .populate('userId', 'username profile.avatar')
+    .populate('collaborators', 'username profile.avatar');
     res.json(goals);
   } catch (err) {
     console.error(err.message);
@@ -161,6 +172,136 @@ router.delete('/:id', auth, async (req, res) => {
         console.error(err.message);
         res.status(500).send('Server Error');
     }
+});
+
+// @route   GET api/goals/invitations
+// @desc    Get pending goal invitations for user
+// @access  Private
+router.get('/invitations', auth, async (req, res) => {
+  try {
+    const invitations = await Goal.find({
+      'invitations.user': req.user.id,
+      'invitations.status': 'pending'
+    })
+    .populate('userId', 'username profile.avatar')
+    .select('title description category targetDate userId invitations');
+    
+    // Filter out only relevant invitation for this user
+    const formatted = invitations.map(goal => {
+      const invite = goal.invitations.find(i => i.user.toString() === req.user.id);
+      return {
+        _id: goal._id,
+        title: goal.title,
+        description: goal.description,
+        invitedBy: goal.userId,
+        inviteId: invite._id,
+        token: invite.token,
+        status: invite.status
+      };
+    });
+    
+    res.json(formatted);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   POST api/goals/:id/invite
+// @desc    Invite a collaborator by username
+// @access  Private
+router.post('/:id/invite', auth, async (req, res) => {
+  const { username } = req.body;
+  try {
+    const goal = await Goal.findById(req.params.id);
+    if (!goal) return res.status(404).json({ msg: 'Goal not found' });
+    if (goal.userId.toString() !== req.user.id) return res.status(401).json({ msg: 'Not authorized' });
+
+    const invitee = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
+    if (!invitee) return res.status(404).json({ msg: 'User not found' });
+
+    if (invitee._id.toString() === req.user.id) {
+       return res.status(400).json({ msg: 'Cannot invite yourself' });
+    }
+
+    if (goal.collaborators.includes(invitee._id)) {
+      return res.status(400).json({ msg: 'User is already a collaborator' });
+    }
+
+    // Check if pending invitation exists
+    const existingInvite = goal.invitations.find(i => i.user.toString() === invitee._id.toString() && i.status === 'pending');
+    if (existingInvite) return res.status(400).json({ msg: 'Invitation already pending' });
+
+    const token = crypto.randomBytes(20).toString('hex');
+    goal.invitations.push({
+      user: invitee._id,
+      token,
+      invitedBy: req.user.id
+    });
+
+    await goal.save();
+
+    // Send Email
+    const inviter = await User.findById(req.user.id);
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    await sendEmail(invitee.email, 'collaborationInvite', {
+      recipientName: invitee.username,
+      inviterName: inviter.username,
+      goalTitle: goal.title,
+      goalDescription: goal.description,
+      acceptUrl: `${clientUrl}/goals/accept/${token}`
+    });
+
+    res.json({ msg: 'Invitation sent successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   POST api/goals/accept/:token
+// @desc    Accept collaboration invitation
+// @access  Private
+router.post('/accept/:token', auth, async (req, res) => {
+  try {
+    const goal = await Goal.findOne({ 'invitations.token': req.params.token });
+    if (!goal) return res.status(404).json({ msg: 'Invitation not found or invalid' });
+
+    const inviteIdx = goal.invitations.findIndex(i => i.token === req.params.token);
+    const invite = goal.invitations[inviteIdx];
+
+    if (invite.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'This invitation belongs to another user' });
+    }
+
+    if (invite.status !== 'pending') {
+      return res.status(400).json({ msg: 'Invitation already processed' });
+    }
+
+    // Update invitation status
+    invite.status = 'accepted';
+    
+    // Add to collaborators
+    if (!goal.collaborators.includes(req.user.id)) {
+      goal.collaborators.push(req.user.id);
+    }
+
+    await goal.save();
+
+    // Log Activity
+    await new Activity({
+      userId: req.user.id,
+      type: 'collaboration_joined',
+      title: goal.title,
+      description: `Joined forces on: ${goal.title}`,
+      metadata: { referenceId: goal._id, icon: '🤝' }
+    }).save();
+
+    res.json({ msg: 'Collaboration accepted', goalId: goal._id });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
 
 export default router;

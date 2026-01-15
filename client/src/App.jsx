@@ -15,8 +15,10 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Motivation from './pages/Motivation';
 import AdminPanel from './pages/AdminPanel';
+import AcceptInvite from './pages/AcceptInvite';
 import Layout from './components/Layout';
 import PWAPrompt from './components/PWAPrompt';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import AuthenticatedStack from './components/AuthenticatedStack';
 
 // Wrapper for protected routes to enforce authentication and layout
@@ -60,13 +62,19 @@ function App() {
                   <Route path="/profile/:userId" element={<AuthenticatedStack />} />
                   <Route path="/settings" element={<AuthenticatedStack />} />
                   <Route path="/admin" element={<AuthenticatedStack />} />
+                  <Route path="/goals/accept/:token" element={<AcceptInvite />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             
             {/* Suppress PWA prompt on IP to prevent caching friction during development */}
-            {!isIP && <PWAPrompt />}
+            {!isIP && (
+              <>
+                <PWAPrompt />
+                <PWAInstallPrompt />
+              </>
+            )}
             
             {/* Subtle Dev Mode Indicator for IP access */}
             {isIP && (

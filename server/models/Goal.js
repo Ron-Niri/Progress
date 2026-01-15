@@ -19,6 +19,13 @@ const GoalSchema = new mongoose.Schema({
   }],
   dependencies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Goal' }],
   collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  invitations: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' },
+    token: { type: String },
+    invitedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now }
+  }],
   attachments: [{
     url: { type: String },
     name: { type: String },
