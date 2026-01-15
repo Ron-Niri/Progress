@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Plus, Trash2, Edit2, CheckCircle2, Circle, Target, Calendar, Clock, AlertCircle, X, ChevronRight } from 'lucide-react';
+import { 
+  Plus, Trash2, Edit2, CheckCircle2, Circle, Target, Calendar, Clock, 
+  AlertCircle, X, Hash, Link as LinkIcon, Users, 
+  Layers, Lightbulb, ArrowRight, Save, Trash
+} from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 
@@ -8,16 +12,22 @@ export default function Goals() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const { refreshUser } = useAuth();
-  const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [newGoal, setNewGoal] = useState({ 
+  
+  const initialGoalState = { 
     title: '', 
     description: '', 
     targetDate: '', 
     category: 'General',
     subGoals: [],
-    milestones: []
-  });
+    milestones: [],
+    dependencies: [],
+    collaboratorsText: '',
+    attachmentsText: ''
+  };
+
+  const [newGoal, setNewGoal] = useState(initialGoalState);
 
   useEffect(() => {
     fetchGoals();
@@ -34,12 +44,39 @@ export default function Goals() {
     }
   };
 
+  const handleOpenModal = (goal = null) => {
+    if (goal) {
+      setEditingId(goal._id);
+      setNewGoal({
+        title: goal.title,
+        description: goal.description || '',
+        targetDate: goal.targetDate ? format(new Date(goal.targetDate), 'yyyy-MM-dd') : '',
+        category: goal.category || 'General',
+        subGoals: goal.subGoals || [],
+        milestones: goal.milestones || [],
+        dependencies: goal.dependencies || [],
+        collaboratorsText: (goal.collaborators || []).join(', '),
+        attachmentsText: (goal.attachments || []).map(a => a.url).join(', ')
+      });
+    } else {
+      setEditingId(null);
+      setNewGoal(initialGoalState);
+    }
+    setShowModal(true);
+  };
+
   const handleCreate = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
+    // Construct payload
+    const attachments = (newGoal.attachmentsText || '')
+      .split(',')
+      .filter(l => l.trim())
+      .map(l => ({ url: l.trim(), name: l.trim().split('/').pop() || 'Link' }));
+
     const payload = {
       ...newGoal,
-      attachments: (newGoal.attachmentsText || '').split(',').filter(l => l.trim()).map(l => ({ url: l.trim(), name: l.trim() })),
-      // simplified collaborators handling for now
+      attachments,
       collaborators: [] 
     };
 
@@ -50,25 +87,13 @@ export default function Goals() {
         const res = await api.post('/goals', payload);
         if (res.data.gamification) refreshUser();
       }
-      setNewGoal({ title: '', description: '', targetDate: '', category: 'General', subGoals: [], milestones: [] });
-      setShowForm(false);
+      setShowModal(false);
+      setNewGoal(initialGoalState);
       setEditingId(null);
       fetchGoals();
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const handleEdit = (goal) => {
-    setNewGoal({
-      title: goal.title,
-      description: goal.description || '',
-      targetDate: goal.targetDate ? format(new Date(goal.targetDate), 'yyyy-MM-dd') : '',
-      category: goal.category || 'General',
-      subGoals: goal.subGoals || []
-    });
-    setEditingId(goal._id);
-    setShowForm(true);
   };
 
   const handleDelete = async (id) => {
@@ -97,7 +122,7 @@ export default function Goals() {
     const updatedSubGoals = [...goal.subGoals];
     updatedSubGoals[subGoalIdx].completed = !updatedSubGoals[subGoalIdx].completed;
     
-    // Recalculate progress based on subgoals if they exist
+    // Recalculate progress based on subgoals
     const completedCount = updatedSubGoals.filter(sg => sg.completed).length;
     const progress = Math.round((completedCount / updatedSubGoals.length) * 100);
     const status = progress === 100 ? 'completed' : 'in-progress';
@@ -117,158 +142,380 @@ export default function Goals() {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center h-64 space-y-4">
-      <div className="w-10 h-10 border-4 border-slate-200 border-t-action rounded-full animate-spin"></div>
-      <p className="text-secondary dark:text-dark-secondary font-medium animate-pulse">Calculating your milestones...</p>
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-slate-200 border-t-action rounded-full animate-spin"></div>
+        <Target className="absolute inset-0 m-auto text-action animate-pulse" size={24} />
+      </div>
+      <p className="text-secondary dark:text-dark-secondary font-heading font-bold text-lg animate-pulse">Charting your course...</p>
     </div>
   );
 
   return (
-    <div className="space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
-           <h2 className="text-3xl sm:text-4xl font-heading font-black text-primary dark:text-dark-primary flex items-center gap-4">
-             <Target className="text-action" size={36} /> Goals & Milestones
-           </h2>
-           <p className="text-secondary dark:text-dark-secondary mt-1 text-sm sm:text-base font-medium opacity-70 leading-relaxed">Track your long-term ambitions and break them down.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 animate-in fade-in duration-700">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="p-2 bg-action/10 rounded-lg">
+              <Target className="text-action" size={24} />
+            </div>
+            <span className="text-action font-black uppercase tracking-[0.2em] text-[10px]">Strategic Planning</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-heading font-black text-primary dark:text-dark-primary tracking-tight">
+            Goals & <span className="text-transparent bg-clip-text bg-gradient-to-r from-action to-accent">Milestones</span>
+          </h1>
+          <p className="text-secondary dark:text-dark-secondary max-w-xl font-medium">
+            Turn your long-term visions into reality by breaking them down into actionable achievements.
+          </p>
         </div>
+        
         <button 
-           onClick={() => {
-             setShowForm(!showForm);
-             if (showForm) setEditingId(null);
-           }}
-           className="w-full lg:w-auto px-8 py-4 bg-primary dark:bg-action text-white rounded-2xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
+           onClick={() => handleOpenModal()}
+           className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary dark:bg-action text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all hover:shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)] hover:-translate-y-0.5 active:translate-y-0"
         >
-          {showForm ? <X size={18} /> : <Plus size={18} />} 
-          {showForm ? 'Close' : 'Target New Goal'}
+          <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+          Set New Goal
         </button>
       </div>
 
-       {showForm && (
-          <div className="p-8 bg-white dark:bg-dark-surface rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl animate-in slide-in-from-top-4 duration-300">
-            <h3 className="text-xl font-heading font-bold mb-6 text-primary dark:text-dark-primary flex items-center gap-2">
-              {editingId ? <Edit2 size={20} className="text-action" /> : <Target size={20} className="text-action" />}
-              {editingId ? 'Refine your ambition' : 'Set a new horizon'}
-            </h3>
-             <div className="mb-8">
-               <p className="text-[10px] font-black text-secondary dark:text-dark-secondary uppercase tracking-widest mb-4">Or Quick Start with a Template</p>
-               <div className="flex flex-wrap gap-2">
-                 {[
-                   { title: 'Run a 5K', cat: 'Health', sub: ['Buy running shoes', 'Week 1: 1km runs', 'Week 2: 2km runs', 'Race day registration'] },
-                   { title: 'Read 12 Books', cat: 'Personal', sub: ['Select book list', 'Read 20 mins/day', 'Join a book club'] },
-                   { title: 'Learn React', cat: 'Career', sub: ['JS Fundamentals', 'React Hooks', 'Build a project', 'Deploy to Coolify'] },
-                   { title: 'Emergency Fund', cat: 'Finance', sub: ['Open savings account', 'Set auto-transfer', 'Reach $1000 goal'] }
-                 ].map(template => (
-                   <button 
-                     key={template.title}
-                     type="button"
-                     onClick={() => setNewGoal({
-                       ...newGoal,
-                       title: template.title,
-                       category: template.cat,
-                       subGoals: template.sub.map(s => ({ title: s, completed: false }))
-                     })}
-                     className="px-4 py-2 bg-surface dark:bg-gray-800 hover:bg-action/10 hover:text-action rounded-xl text-xs font-bold transition-all border border-gray-100 dark:border-gray-700"
-                   >
-                     {template.title}
-                   </button>
-                 ))}
-               </div>
-             </div>
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Active', value: goals.filter(g => g.status !== 'completed').length, color: 'text-action', bg: 'bg-action/5 border-action/10' },
+          { label: 'Completed', value: goals.filter(g => g.status === 'completed').length, color: 'text-accent', bg: 'bg-accent/5 border-accent/10' },
+          { label: 'Success Rate', value: goals.length ? Math.round((goals.filter(g => g.status === 'completed').length / goals.length) * 100) + '%' : '0%', color: 'text-purple-500', bg: 'bg-purple-500/5 border-purple-500/10' },
+          { label: 'Steps Taken', value: goals.reduce((acc, g) => acc + (g.subGoals?.filter(s => s.completed).length || 0), 0), color: 'text-orange-500', bg: 'bg-orange-500/5 border-orange-500/10' }
+        ].map((stat, i) => (
+          <div key={i} className={`p-5 rounded-[1.5rem] border backdrop-blur-sm ${stat.bg}`}>
+            <p className="text-[10px] uppercase tracking-widest font-black text-secondary mb-1 opacity-70">{stat.label}</p>
+            <p className={`text-2xl font-heading font-black ${stat.color}`}>{stat.value}</p>
+          </div>
+        ))}
+      </div>
 
-             <form onSubmit={handleCreate} className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Goal Title</label>
-                  <input 
-                    type="text" 
-                    required
-                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-dark-background px-5 py-4 text-primary dark:text-dark-primary focus:ring-2 focus:ring-action transition-all outline-none shadow-sm"
-                    placeholder="e.g. Run a Half Marathon"
-                    value={newGoal.title}
-                    onChange={e => setNewGoal({...newGoal, title: e.target.value})}
-                  />
+      {/* Goals Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {goals.map(goal => {
+          const daysLeft = getDaysLeft(goal.targetDate);
+          const isOverdue = daysLeft !== null && daysLeft < 0 && goal.status !== 'completed';
+          
+          return (
+            <div 
+              key={goal._id} 
+              className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 overflow-hidden
+                ${goal.status === 'completed' 
+                  ? 'bg-gradient-to-br from-green-50 to-white dark:from-green-900/10 dark:to-dark-surface border-green-100 dark:border-green-500/20' 
+                  : 'bg-white dark:bg-dark-surface border-gray-100 dark:border-gray-800'}`}
+            >
+               <Target size={160} className="absolute -right-10 -bottom-10 text-primary dark:text-white opacity-[0.02] group-hover:rotate-12 transition-transform duration-1000" />
+
+               <div className="relative z-10 flex flex-col h-full">
+                  <div className="flex items-start justify-between mb-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-60">
+                          {goal.category || 'General'}
+                        </span>
+                        <div className={`w-12 h-1 rounded-full ${goal.status === 'completed' ? 'bg-accent' : 'bg-action'}`} />
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleOpenModal(goal)} className="p-2.5 text-secondary hover:text-action hover:bg-action/10 rounded-xl transition-all"><Edit2 size={16} /></button>
+                          <button onClick={() => handleDelete(goal._id)} className="p-2.5 text-secondary hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"><Trash2 size={16} /></button>
+                      </div>
+                  </div>
+                  
+                  <div className="mb-6 flex-1">
+                    <h3 className={`font-heading font-black text-2xl mb-3 leading-tight ${goal.status === 'completed' ? 'text-accent/60 line-through' : 'text-primary dark:text-dark-primary'}`}>
+                      {goal.title}
+                    </h3>
+                    {goal.description && <p className="text-secondary dark:text-dark-secondary text-sm line-clamp-2 font-medium leading-relaxed">{goal.description}</p>}
+                  </div>
+
+                  {goal.subGoals && goal.subGoals.length > 0 && (
+                    <div className="mb-6 space-y-3">
+                      <div className="flex items-center gap-2 mb-2">
+                         <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
+                         <span className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">Next Steps</span>
+                         <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800" />
+                      </div>
+                      <div className="space-y-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
+                        {goal.subGoals.map((sg, idx) => (
+                          <div key={idx} onClick={() => toggleSubGoal(goal, idx)} className="flex items-center gap-3 cursor-pointer group/sg py-1">
+                            <div className={`shrink-0 w-5 h-5 rounded-lg border flex items-center justify-center transition-all duration-300 ${sg.completed ? 'bg-accent border-accent text-white shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}`}>
+                              {sg.completed && <CheckCircle2 size={12} />}
+                            </div>
+                            <span className={`text-xs font-bold transition-all line-clamp-1 ${sg.completed ? 'text-secondary line-through' : 'text-primary dark:text-dark-primary group-hover/sg:text-action'}`}>
+                              {sg.title}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-auto pt-6 border-t border-gray-50 dark:border-gray-800/50">
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black text-secondary uppercase tracking-widest">Velocity</span>
+                        <span className={`text-xs font-black ${goal.status === 'completed' ? 'text-accent' : 'text-action'}`}>{goal.progress}%</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
+                            <div className={`h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_-3px] ${goal.status === 'completed' ? 'bg-accent shadow-accent' : 'bg-action shadow-action'}`} style={{ width: `${goal.progress}%` }}></div>
+                        </div>
+                        <button onClick={() => toggleStatus(goal)} className={`shrink-0 p-1.5 rounded-xl transition-all hover:scale-110 active:scale-90 ${goal.status === 'completed' ? 'bg-accent/10 text-accent' : 'bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-600 hover:text-action'}`}>
+                            {goal.status === 'completed' ? <CheckCircle2 size={24} /> : <Circle size={24} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                       {goal.targetDate && (
+                         <div className={`px-3 py-2 rounded-xl flex items-center gap-2 border ${isOverdue ? 'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/10 dark:border-red-500/20' : 'bg-surface dark:bg-gray-800 border-transparent text-secondary'}`}>
+                           <Calendar size={14} />
+                           <span className="text-[10px] font-bold">{format(new Date(goal.targetDate), 'MMM d, yyyy')}</span>
+                         </div>
+                       )}
+                       {isOverdue && (
+                          <div className="px-3 py-2 rounded-xl bg-red-500 text-white flex items-center gap-2 animate-pulse shadow-lg shadow-red-500/20">
+                            <AlertCircle size={14} />
+                            <span className="text-[10px] font-black uppercase tracking-wider">Overdue</span>
+                          </div>
+                       )}
+                       {!isOverdue && daysLeft !== null && goal.status !== 'completed' && (
+                          <div className="px-3 py-2 rounded-xl bg-action/5 border border-action/10 text-action flex items-center gap-2">
+                            <Clock size={14} />
+                            <span className="text-[10px] font-black uppercase">{daysLeft} Days Left</span>
+                          </div>
+                       )}
+                    </div>
+                  </div>
+               </div>
+            </div>
+          );
+        })}
+        
+        {goals.length === 0 && !loading && (
+            <div className="col-span-full flex flex-col items-center justify-center py-32 bg-white dark:bg-dark-surface rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-xl overflow-hidden relative">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-action/5 via-transparent to-transparent" />
+                <div className="relative z-10 text-center">
+                  <div className="w-24 h-24 bg-action/10 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+                    <Target className="text-action" size={48} />
+                  </div>
+                  <h3 className="text-3xl font-heading font-black text-primary dark:text-dark-primary mb-3">Your Journey Awaits</h3>
+                  <p className="text-secondary dark:text-dark-secondary max-w-sm mx-auto mb-10 font-medium font-bold opacity-80">Every great achievement began as a simple goal. What's your first destination?</p>
+                  <button onClick={() => handleOpenModal()} className="px-12 py-5 bg-action text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_-15px_rgba(59,130,246,0.3)] shadow-action/30">
+                    Set Your First Goal
+                  </button>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Category</label>
-                  <select 
-                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-dark-background px-5 py-4 text-primary dark:text-dark-primary focus:ring-2 focus:ring-action transition-all outline-none shadow-sm"
-                    value={newGoal.category}
-                    onChange={e => setNewGoal({...newGoal, category: e.target.value})}
-                  >
-                    <option value="General">General</option>
-                    <option value="Health">Health & Fitness</option>
-                    <option value="Career">Career & Skill</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Personal">Personal Growth</option>
-                  </select>
+            </div>
+        )}
+      </div>
+
+      {/* Modal Overlay */}
+      {showModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-10 backdrop-blur-xl bg-white/40 dark:bg-black/60 animate-in fade-in duration-300">
+          <div 
+            className="bg-white dark:bg-dark-surface w-full max-w-4xl max-h-[90vh] rounded-[3rem] shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-8 duration-500"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-8 pb-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-action/10 rounded-2xl flex items-center justify-center shadow-inner">
+                  {editingId ? <Edit2 className="text-action" size={28} /> : <Target className="text-action" size={28} />}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-heading font-black text-primary dark:text-dark-primary">
+                    {editingId ? 'Refine your Vision' : 'Chart New Territory'}
+                  </h2>
+                  <p className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest opacity-60">
+                    {editingId ? 'Optimization Phase' : 'Set a new strategic horizon'}
+                  </p>
                 </div>
               </div>
+              <button onClick={() => setShowModal(false)} className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-2xl text-secondary hover:text-primary dark:hover:text-dark-primary transition-all">
+                <X size={24} />
+              </button>
+            </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Target Deadline</label>
-                  <input 
-                    type="date" 
-                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-dark-background px-5 py-4 text-primary dark:text-dark-primary focus:ring-2 focus:ring-action transition-all outline-none shadow-sm"
-                    value={newGoal.targetDate}
-                    onChange={e => setNewGoal({...newGoal, targetDate: e.target.value})}
-                  />
+            <form onSubmit={handleCreate} className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-4 space-y-10">
+              {!editingId && (
+                <div className="bg-surface dark:bg-dark-background/50 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800/50">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Lightbulb size={16} className="text-orange-400" />
+                    <span className="text-[10px] font-black text-secondary uppercase tracking-[0.2em]">Quick Launch Templates</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {[
+                      { title: 'Run a 5K', cat: 'Health', sub: ['Buy running shoes', 'Week 1: 1km runs', 'Race day registration'] },
+                      { title: 'Read 12 Books', cat: 'Personal', sub: ['Select book list', 'Read 20 mins/day', 'Join a book club'] },
+                      { title: 'Learn React', cat: 'Career', sub: ['JS Fundamentals', 'React Hooks', 'Build a project'] },
+                      { title: 'Emergency Fund', cat: 'Finance', sub: ['Open savings', 'Reach $1000 goal', 'Maintain habit'] }
+                    ].map(template => (
+                      <button 
+                        key={template.title}
+                        type="button"
+                        onClick={() => setNewGoal({
+                          ...newGoal,
+                          title: template.title,
+                          category: template.cat,
+                          subGoals: template.sub.map(s => ({ title: s, completed: false }))
+                        })}
+                        className="p-3 text-left bg-white dark:bg-gray-800 hover:border-action hover:shadow-lg rounded-2xl transition-all border border-transparent group/t"
+                      >
+                        <p className="text-[10px] font-black text-secondary mb-1 group-hover/t:text-action">{template.cat}</p>
+                        <p className="text-xs font-black text-primary dark:text-dark-primary">{template.title}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                   <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Strategy</label>
-                   <textarea 
+              )}
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[10px] font-black text-secondary uppercase tracking-widest ml-1">Goal Designation</label>
+                    <div className="relative group">
+                      <Target className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-action transition-colors" size={20} />
+                      <input 
+                        type="text" 
+                        required
+                        className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pl-14 pr-6 py-5 text-primary dark:text-dark-primary font-bold focus:ring-0 focus:border-action focus:bg-white dark:focus:bg-dark-surface transition-all outline-none"
+                        placeholder="e.g. Master Full-Stack Development"
+                        value={newGoal.title}
+                        onChange={e => setNewGoal({...newGoal, title: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-secondary uppercase tracking-widest ml-1">Category</label>
+                    <div className="relative group">
+                      <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-action transition-colors" size={20} />
+                      <select 
+                        className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pl-14 pr-6 py-5 text-primary dark:text-dark-primary font-bold focus:ring-0 focus:border-action focus:bg-white dark:focus:bg-dark-surface transition-all outline-none appearance-none"
+                        value={newGoal.category}
+                        onChange={e => setNewGoal({...newGoal, category: e.target.value})}
+                      >
+                        <option value="General">General</option>
+                        <option value="Health">Health & Fitness</option>
+                        <option value="Career">Career & Skill</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Personal">Personal Growth</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                    <label className="text-[10px] font-black text-secondary uppercase tracking-widest ml-1">Target Deadline</label>
+                    <div className="relative group">
+                      <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-action transition-colors" size={20} />
+                      <input 
+                        type="date" 
+                        className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pl-14 pr-6 py-5 text-primary dark:text-dark-primary font-bold focus:ring-0 focus:border-action focus:bg-white dark:focus:bg-dark-surface transition-all outline-none"
+                        value={newGoal.targetDate}
+                        onChange={e => setNewGoal({...newGoal, targetDate: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-secondary uppercase tracking-widest ml-1">Strategy & Vision</label>
+                    <textarea 
                       rows={1}
-                      className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-dark-background px-5 py-4 text-primary dark:text-dark-primary focus:ring-2 focus:ring-action transition-all outline-none resize-none shadow-sm"
-                      placeholder="High-level plan..."
+                      className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-6 py-5 text-primary dark:text-dark-primary font-medium focus:ring-0 focus:border-action focus:bg-white dark:focus:bg-dark-surface transition-all outline-none resize-none"
+                      placeholder="High-level plan or motivation..."
                       value={newGoal.description}
                       onChange={e => setNewGoal({...newGoal, description: e.target.value})}
-                   />
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Break it down (Sub-goals)</label>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <Layers size={18} className="text-secondary" />
+                    <label className="text-sm font-black text-primary dark:text-white uppercase tracking-widest">Tactical Steps (Milestones)</label>
+                  </div>
                   <button 
                     type="button"
                     onClick={() => setNewGoal({...newGoal, subGoals: [...newGoal.subGoals, { title: '', completed: false }]})}
-                    className="text-action text-xs font-bold flex items-center gap-1"
+                    className="flex items-center gap-2 px-4 py-2 bg-action/10 text-action rounded-xl text-xs font-black uppercase tracking-widest hover:bg-action hover:text-white transition-all shadow-sm"
                   >
-                    <Plus size={14} /> Add Sub-goal
+                    <Plus size={14} /> Add Step
                   </button>
                 </div>
-                <div className="space-y-2">
+                
+                <div className="space-y-3">
                   {newGoal.subGoals.map((sg, idx) => (
-                    <div key={idx} className="flex gap-2">
-                      <input 
-                        type="text"
-                        className="flex-1 rounded-xl border border-gray-100 dark:border-gray-700 bg-surface dark:bg-gray-800 px-4 py-2 text-sm text-primary dark:text-dark-primary focus:ring-1 focus:ring-action transition-all outline-none"
-                        placeholder="Actionable step..."
-                        value={sg.title}
-                        onChange={e => {
-                          const updated = [...newGoal.subGoals];
-                          updated[idx].title = e.target.value;
-                          setNewGoal({...newGoal, subGoals: updated});
-                        }}
-                      />
+                    <div key={idx} className="flex gap-3 animate-in slide-in-from-left-4 duration-300">
+                      <div className="flex-1 relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center text-[10px] font-black text-secondary group-focus-within:border-action group-focus-within:text-action transition-all">
+                          {idx + 1}
+                        </div>
+                        <input 
+                          type="text"
+                          className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 pl-14 pr-6 py-4 text-sm font-bold text-primary dark:text-dark-primary placeholder:font-medium focus:ring-0 focus:border-action focus:bg-white dark:focus:bg-dark-surface transition-all outline-none"
+                          placeholder="Actionable move..."
+                          value={sg.title}
+                          onChange={e => {
+                            const updated = [...newGoal.subGoals];
+                            updated[idx].title = e.target.value;
+                            setNewGoal({...newGoal, subGoals: updated});
+                          }}
+                        />
+                      </div>
                       <button 
                         type="button"
                         onClick={() => {
                           const updated = newGoal.subGoals.filter((_, i) => i !== idx);
                           setNewGoal({...newGoal, subGoals: updated});
                         }}
-                        className="p-2 text-red-400 hover:text-red-600"
+                        className="p-4 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all"
                       >
-                        <Trash2 size={16} />
+                        <Trash size={18} />
                       </button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Prerequisites (Depends on)</label>
+              <div className="pt-6 border-t border-gray-50 dark:border-gray-800/50 grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-2 px-1">
+                      <Users size={16} className="text-secondary" />
+                      <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Collaborators</label>
+                    </div>
+                    <input 
+                      type="text"
+                      className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-6 py-4 text-xs font-bold text-primary dark:text-dark-primary focus:ring-0 focus:border-action transition-all outline-none"
+                      placeholder="emails..."
+                      value={newGoal.collaboratorsText || ''}
+                      onChange={e => setNewGoal({...newGoal, collaboratorsText: e.target.value})}
+                    />
+                 </div>
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-2 px-1">
+                      <LinkIcon size={16} className="text-secondary" />
+                      <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Resource Links</label>
+                    </div>
+                    <input 
+                      type="text"
+                      className="w-full rounded-2xl border-2 border-gray-50 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-6 py-4 text-xs font-bold text-primary dark:text-dark-primary focus:ring-0 focus:border-action transition-all outline-none"
+                      placeholder="URLs..."
+                      value={newGoal.attachmentsText || ''}
+                      onChange={e => setNewGoal({...newGoal, attachmentsText: e.target.value})}
+                    />
+                 </div>
+              </div>
+
+               <div className="space-y-4">
+                <div className="flex items-center gap-2 px-1">
+                  <ArrowRight size={16} className="text-secondary" />
+                  <label className="text-[10px] font-black text-secondary uppercase tracking-widest">Prerequisites</label>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {goals.filter(g => g._id !== editingId).map(g => (
                     <button
@@ -282,10 +529,10 @@ export default function Goals() {
                           setNewGoal({...newGoal, dependencies: [...deps, g._id]});
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${
+                      className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
                         (newGoal.dependencies || []).includes(g._id)
-                          ? 'bg-action text-white border-action'
-                          : 'bg-surface dark:bg-gray-800 border-gray-100 dark:border-gray-700'
+                          ? 'bg-action text-white border-action shadow-lg'
+                          : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-secondary'
                       }`}
                     >
                       {g.title}
@@ -293,169 +540,44 @@ export default function Goals() {
                   ))}
                 </div>
               </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Collaborators (Comma separated emails)</label>
-                  <input 
-                    type="text"
-                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-dark-background px-5 py-4 text-sm text-primary dark:text-dark-primary focus:ring-2 focus:ring-action outline-none"
-                    placeholder="teammate@example.com, friend@example.com"
-                    value={newGoal.collaboratorsText || ''}
-                    onChange={e => setNewGoal({...newGoal, collaboratorsText: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-secondary dark:text-dark-secondary uppercase tracking-widest">Resource Links (Attachments)</label>
-                  <input 
-                    type="text"
-                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-dark-background px-5 py-4 text-sm text-primary dark:text-dark-primary focus:ring-2 focus:ring-action outline-none"
-                    placeholder="https://documentation.com, https://plans.pdf"
-                    value={newGoal.attachmentsText || ''}
-                    onChange={e => setNewGoal({...newGoal, attachmentsText: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-2">
-                <button type="submit" className="px-10 py-3 bg-action text-white rounded-2xl font-bold hover:opacity-90 transition-all shadow-lg">
-                  {editingId ? 'Update Goal' : 'Initialize Goal'}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingId(null);
-                    setNewGoal({ title: '', description: '', targetDate: '', category: 'General', subGoals: [], milestones: [] });
-                  }} 
-                  className="px-10 py-3 bg-surface dark:bg-gray-800 text-primary dark:text-dark-primary rounded-2xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
             </form>
+
+            <div className="p-8 border-t border-gray-50 dark:border-gray-800/50 flex flex-col sm:flex-row gap-4">
+              <button 
+                type="button" 
+                onClick={handleCreate}
+                className="flex-1 flex items-center justify-center gap-3 py-5 bg-action text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs transition-all hover:shadow-xl shadow-action/30 active:scale-95"
+              >
+                <Save size={18} />
+                {editingId ? 'Update Strategy' : 'Initialize Mission'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setShowModal(false)}
+                className="px-10 py-5 bg-gray-50 dark:bg-gray-800 text-primary dark:text-dark-primary rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-xs hover:bg-gray-100 transition-all border border-gray-200 dark:border-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {goals.map(goal => {
-          const daysLeft = getDaysLeft(goal.targetDate);
-          const isOverdue = daysLeft !== null && daysLeft < 0 && goal.status !== 'completed';
-          
-          return (
-            <div key={goal._id} className={`p-8 rounded-3xl border shadow-soft flex flex-col justify-between transition-all hover:shadow-xl group overflow-hidden relative ${goal.status === 'completed' ? 'bg-green-50/50 dark:bg-green-900/10 border-green-100 dark:border-green-500/20' : 'bg-white dark:bg-dark-surface border-gray-100 dark:border-gray-700'}`}>
-               <div className="absolute top-0 right-0 p-8 opacity-[0.03] -rotate-12 group-hover:rotate-0 transition-transform duration-700">
-                 <Target size={120} />
-               </div>
-
-               <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm">
-                          <Target className={goal.status === 'completed' ? 'text-accent' : 'text-action'} size={24} />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 bg-surface dark:bg-gray-800 text-secondary rounded-full">
-                          {goal.category || 'General'}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                          <button onClick={() => handleEdit(goal)} className="p-2 text-secondary hover:text-action hover:bg-surface dark:hover:bg-gray-800 rounded-xl transition-all"><Edit2 size={16} /></button>
-                          <button onClick={() => handleDelete(goal._id)} className="p-2 text-secondary hover:text-red-500 hover:bg-surface dark:hover:bg-gray-800 rounded-xl transition-all"><Trash2 size={16} /></button>
-                      </div>
-                  </div>
-                  
-                  <h3 className={`font-bold text-xl mb-2 line-clamp-1 ${goal.status === 'completed' ? 'text-accent line-through opacity-50' : 'text-primary dark:text-dark-primary'}`}>{goal.title}</h3>
-                  {goal.description && <p className="text-secondary dark:text-dark-secondary text-sm mb-6 line-clamp-2 min-h-[2.5rem]">{goal.description}</p>}
-                  
-                  {/* Sub-goals list */}
-                  {goal.subGoals && goal.subGoals.length > 0 && (
-                    <div className="mb-6 space-y-2">
-                      <p className="text-[10px] font-black text-secondary uppercase tracking-widest mb-2">Milestones</p>
-                      {goal.subGoals.map((sg, idx) => (
-                        <div 
-                          key={idx} 
-                          onClick={() => toggleSubGoal(goal, idx)}
-                          className="flex items-center gap-3 cursor-pointer group/sg"
-                        >
-                          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${sg.completed ? 'bg-accent/20 border-accent text-accent' : 'border-gray-200 dark:border-gray-700'}`}>
-                            {sg.completed && <CheckCircle2 size={12} />}
-                          </div>
-                          <span className={`text-xs font-medium transition-all ${sg.completed ? 'text-secondary line-through' : 'text-primary dark:text-dark-primary group-hover/sg:text-action'}`}>
-                            {sg.title}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Prerequisites display */}
-                  {goal.dependencies && goal.dependencies.length > 0 && (
-                    <div className="mb-6 space-y-2">
-                       <p className="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">Prerequisites</p>
-                       <div className="flex flex-wrap gap-1.5">
-                        {goal.dependencies.map(depId => {
-                          const depGoal = goals.find(g => g._id === depId);
-                          return (
-                            <span key={depId} className="text-[9px] font-bold bg-slate-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 px-2 py-1 rounded-lg text-secondary">
-                              {depGoal ? depGoal.title : 'External Task'}
-                            </span>
-                          );
-                        })}
-                       </div>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-2 mb-8">
-                     {goal.targetDate && (
-                       <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 ${isOverdue ? 'bg-red-100 text-red-600 dark:bg-red-900/20' : 'bg-surface dark:bg-gray-800 text-secondary'}`}>
-                         <Calendar size={12} /> {format(new Date(goal.targetDate), 'MMM d, yyyy')}
-                       </span>
-                     )}
-                     {daysLeft !== null && goal.status !== 'completed' && (
-                        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg flex items-center gap-1.5 ${isOverdue ? 'bg-red-100 text-red-600 dark:bg-red-900/20' : 'bg-blue-50 text-action dark:bg-blue-900/20'}`}>
-                          <Clock size={12} /> {isOverdue ? 'Overdue' : `${daysLeft} Days Left`}
-                        </span>
-                     )}
-                  </div>
-               </div>
-               
-               <div className="relative z-10 mt-auto">
-                  <div className="flex items-center justify-between mb-3 text-xs font-bold uppercase tracking-widest">
-                    <span className="text-secondary">Progress</span>
-                    <span className={goal.status === 'completed' ? 'text-accent' : 'text-action'}>{goal.progress}%</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full transition-all duration-1000 ${goal.status === 'completed' ? 'bg-accent' : 'bg-action'}`} 
-                          style={{ width: `${goal.progress}%` }}
-                        ></div>
-                    </div>
-                    <button onClick={() => toggleStatus(goal)} className="p-1 hover:scale-110 transition-all">
-                        {goal.status === 'completed' ? <CheckCircle2 size={32} className="text-accent" /> : <Circle size={32} className="text-slate-200 dark:text-gray-700 hover:text-action" />}
-                    </button>
-                  </div>
-               </div>
-            </div>
-          );
-        })}
-        
-        {goals.length === 0 && !loading && (
-            <div className="col-span-full text-center py-32 bg-surface/30 dark:bg-gray-800/30 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-700">
-                <div className="w-20 h-20 bg-white dark:bg-dark-surface rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-soft">
-                  <Target className="text-secondary opacity-20" size={40} />
-                </div>
-                <h3 className="text-xl font-heading font-bold text-primary dark:text-dark-primary mb-2">No active goals</h3>
-                <p className="text-secondary dark:text-dark-secondary max-w-sm mx-auto mb-8">Success starts with intent. What is the one thing you want to achieve this year?</p>
-                <button 
-                  onClick={() => setShowForm(true)}
-                  className="px-8 py-3 bg-primary dark:bg-action text-white rounded-2xl font-bold hover:scale-105 transition-all shadow-xl"
-                >
-                  Set Your First Goal
-                </button>
-            </div>
-        )}
-      </div>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #334155;
+        }
+      `}</style>
     </div>
   );
 }

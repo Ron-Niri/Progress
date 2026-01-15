@@ -9,8 +9,17 @@ nprogress.configure({
   minimum: 0.3
 });
 
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  
+  // Dynamic detection for local network testing (--host)
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const apiHost = isLocalhost ? 'localhost' : window.location.hostname;
+  return `http://${apiHost}:5000/api`;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
+  baseURL: getBaseURL(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
