@@ -21,54 +21,44 @@ import {
 import { format } from 'date-fns';
 import Skeleton from '../components/Skeleton';
 import motivationData from '../data/motivation.json';
+import { useProgressData } from '../context/ProgressContext';
 
 export default function Dashboard() {
+  const { 
+    stats: globalStats, 
+    habits: globalHabits, 
+    goals: globalGoals, 
+    achievements: globalAchievements,
+    loading: globalLoading,
+    refresh: refreshGlobalData,
+    refreshSilent
+  } = useProgressData();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    fetchDashboardData();
-  }, [user]);
-
-  const fetchDashboardData = async () => {
-    try {
-      if (!data) setLoading(true);
-      
-      const [statsRes, habitsRes, goalsRes, achievementsRes] = await Promise.all([
-        api.get('/stats'),
-        api.get('/habits'),
-        api.get('/goals'),
-        api.get('/achievements')
-      ]);
-      
+    if (!globalLoading && globalStats && globalHabits && globalGoals) {
       const today = new Date().toDateString();
-      const habitsData = Array.isArray(habitsRes.data) ? habitsRes.data : [];
-      const statsData = statsRes.data || { habits: { completionRate: 0, activeStreaks: 0, longestStreak: 0 } };
-      const goalsData = Array.isArray(goalsRes.data) ? goalsRes.data : [];
-      const achievementsData = Array.isArray(achievementsRes.data) ? achievementsRes.data : [];
-
-      const habitsToday = habitsData.map(habit => ({
+      const habitsToday = globalHabits.map(habit => ({
         ...habit,
         isCompletedToday: Array.isArray(habit.completedDates) && habit.completedDates.some(date => new Date(date).toDateString() === today)
       }));
 
       setData({
-        stats: statsData,
+        stats: globalStats,
         habits: habitsToday,
-        goals: goalsData.filter(g => g.status === 'pending'),
-        achievements: achievementsData.slice(0, 3)
+        goals: globalGoals.filter(g => g.status === 'pending'),
+        achievements: globalAchievements.slice(0, 3)
       });
       setLoading(false);
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setLoading(false);
     }
+  }, [globalStats, globalHabits, globalGoals, globalAchievements, globalLoading]);
+
+  const fetchDashboardData = async () => {
+    await refreshSilent();
   };
 
   const [dailyQuote, setDailyQuote] = useState({ text: "Discipline equals freedom.", author: "Jocko Willink" });

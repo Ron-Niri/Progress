@@ -25,6 +25,13 @@ export const ThemeProvider = ({ children }) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    // Update theme-color meta tag for PWA
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', darkMode ? '#0F1117' : '#FBFBFA');
+    }
+
     localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
 

@@ -8,7 +8,10 @@ import {
 import { format, differenceInDays } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 
+import { useProgressData } from '../context/ProgressContext';
+
 export default function Goals() {
+  const { goals: globalGoals, loading: globalLoading, refreshSilent } = useProgressData();
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const { refreshUser } = useAuth();
@@ -30,18 +33,24 @@ export default function Goals() {
   const [newGoal, setNewGoal] = useState(initialGoalState);
 
   useEffect(() => {
-    fetchGoals();
-  }, []);
+    if (showModal) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+    return () => document.body.classList.remove('no-scroll');
+  }, [showModal]);
 
-  const fetchGoals = async () => {
-    try {
-      const res = await api.get('/goals');
-      setGoals(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
+  useEffect(() => {
+    if (!globalLoading && globalGoals) {
+      setGoals(globalGoals);
       setLoading(false);
     }
+  }, [globalGoals, globalLoading]);
+
+  // For manual or background refreshes that might happen specifically here
+  const fetchGoals = async () => {
+    await refreshSilent();
   };
 
   const handleOpenModal = (goal = null) => {
@@ -339,7 +348,7 @@ export default function Goals() {
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-4 space-y-10">
+            <form onSubmit={handleCreate} className="flex-1 overflow-y-auto custom-scrollbar modal-scroll p-8 pt-4 space-y-10 safe-bottom">
               {!editingId && (
                 <div className="bg-surface dark:bg-dark-background/50 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800/50">
                   <div className="flex items-center gap-2 mb-4">

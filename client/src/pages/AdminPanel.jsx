@@ -384,7 +384,7 @@ export default function AdminPanel() {
           </div>
 
           {/* List Section */}
-          <div className="lg:col-span-2 space-y-4 max-h-[600px] overflow-auto pr-2">
+          <div className="lg:col-span-2 space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar modal-scroll pr-2">
             <h4 className="text-sm font-black text-primary dark:text-dark-primary uppercase tracking-widest mb-4">Existing Templates ({templates.length})</h4>
             <div className="grid sm:grid-cols-2 gap-4">
               {templates.map(template => (

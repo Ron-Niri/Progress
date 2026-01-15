@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ProgressDataProvider } from './context/ProgressContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -15,6 +16,8 @@ import Settings from './pages/Settings';
 import Motivation from './pages/Motivation';
 import AdminPanel from './pages/AdminPanel';
 import Layout from './components/Layout';
+import PWAPrompt from './components/PWAPrompt';
+import AuthenticatedStack from './components/AuthenticatedStack';
 
 // Wrapper for protected routes to enforce authentication and layout
 const ProtectedRoute = () => {
@@ -25,37 +28,55 @@ const ProtectedRoute = () => {
 
   return (
     <Layout>
-      <Outlet />
+      <AuthenticatedStack />
     </Layout>
   );
 };
+
+const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(window.location.hostname) || 
+             window.location.hostname === 'localhost' || 
+             window.location.hostname === '127.0.0.1';
 
 function App() {
   return (
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/verify" element={<Verify />} />
-            
-            <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/habits" element={<Habits />} />
-                <Route path="/goals" element={<Goals />} />
-                <Route path="/journal" element={<Journal />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/motivation" element={<Motivation />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/profile/:userId" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/admin" element={<AdminPanel />} />
-            </Route>
+          <ProgressDataProvider>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/verify" element={<Verify />} />
+              
+              <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard" element={<AuthenticatedStack />} />
+                  <Route path="/habits" element={<AuthenticatedStack />} />
+                  <Route path="/goals" element={<AuthenticatedStack />} />
+                  <Route path="/journal" element={<AuthenticatedStack />} />
+                  <Route path="/analytics" element={<AuthenticatedStack />} />
+                  <Route path="/motivation" element={<AuthenticatedStack />} />
+                  <Route path="/profile" element={<AuthenticatedStack />} />
+                  <Route path="/profile/:userId" element={<AuthenticatedStack />} />
+                  <Route path="/settings" element={<AuthenticatedStack />} />
+                  <Route path="/admin" element={<AuthenticatedStack />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+            
+            {/* Suppress PWA prompt on IP to prevent caching friction during development */}
+            {!isIP && <PWAPrompt />}
+            
+            {/* Subtle Dev Mode Indicator for IP access */}
+            {isIP && (
+              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
+                 <div className="px-3 py-1 bg-black/80 backdrop-blur-md text-[8px] font-black text-white/50 rounded-full border border-white/10 uppercase tracking-[3px]">
+                    IP / Dev Mode • No Cache
+                 </div>
+              </div>
+            )}
+          </ProgressDataProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>

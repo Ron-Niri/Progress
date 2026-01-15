@@ -92,6 +92,15 @@ export default function Profile() {
   );
 
   const Modal = ({ isOpen, onClose, title, list }) => {
+    useEffect(() => {
+      if (isOpen) {
+        document.body.classList.add('no-scroll');
+      } else {
+        document.body.classList.remove('no-scroll');
+      }
+      return () => document.body.classList.remove('no-scroll');
+    }, [isOpen]);
+
     if (!isOpen) return null;
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -102,7 +111,7 @@ export default function Profile() {
               <X size={20} />
             </button>
           </div>
-          <div className="p-4 max-h-[60vh] overflow-y-auto">
+          <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar modal-scroll safe-bottom">
             {list.length === 0 ? (
               <p className="text-center py-8 text-secondary italic">No users found.</p>
             ) : (

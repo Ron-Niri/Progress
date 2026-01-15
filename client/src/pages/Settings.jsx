@@ -18,7 +18,8 @@ import {
   Camera,
   Info,
   ChevronRight,
-  Zap
+  Zap,
+  Smartphone
 } from 'lucide-react';
 
 export default function Settings() {
@@ -143,10 +144,27 @@ export default function Settings() {
     </div>
   );
 
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    });
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') setInstallPrompt(null);
+  };
+
   const tabs = [
     { id: 'profile', name: 'Profile', desc: 'Public identity & bio', icon: User, color: 'text-action' },
     { id: 'preferences', name: 'Preferences', desc: 'Theme & notifications', icon: SettingsIcon, color: 'text-purple-500' },
     { id: 'security', name: 'Security', desc: 'Password & protection', icon: Shield, color: 'text-red-500' },
+    { id: 'system', name: 'System', desc: 'PWA & Version Info', icon: Smartphone, color: 'text-orange-500' },
   ];
 
   return (
@@ -490,6 +508,88 @@ export default function Settings() {
                   </button>
                 </div>
               </form>
+            </section>
+          )}
+
+          {activeTab === 'system' && (
+            <section className="bg-white dark:bg-dark-surface rounded-[2.5rem] border border-gray-100 dark:border-gray-700 p-10 shadow-soft dark:shadow-soft-dark animate-in slide-in-from-right-4 duration-500">
+               <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-100 dark:border-gray-800">
+                 <div className="w-16 h-16 bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-500">
+                   <Smartphone size={32} />
+                 </div>
+                 <div>
+                   <h3 className="text-2xl font-heading font-black text-primary dark:text-dark-primary">PWA Protocol</h3>
+                   <p className="text-secondary dark:text-dark-secondary text-sm font-medium">Manage app installation and system integrity.</p>
+                 </div>
+               </div>
+
+               <div className="space-y-8">
+                  <div className="p-8 bg-surface/50 dark:bg-gray-800/30 rounded-[2rem] border border-gray-50 dark:border-gray-800">
+                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="max-w-md">
+                           <p className="font-black text-primary dark:text-dark-primary uppercase tracking-widest text-xs mb-2">Native Integration</p>
+                           <h4 className="text-lg font-bold text-primary dark:text-dark-primary mb-2">Install Progress App</h4>
+                           <p className="text-sm text-secondary dark:text-dark-secondary font-medium leading-relaxed">
+                              Run Progress as a dedicated application. Benefits include faster access, offline stability, and a seamless full-screen experience without browser toolbars.
+                           </p>
+                        </div>
+                        
+                        {installPrompt ? (
+                          <button 
+                            onClick={handleInstall}
+                            className="px-8 py-4 bg-action text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all text-center"
+                          >
+                            Install Now
+                          </button>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                             <div className="px-5 py-2.5 bg-green-500/10 text-green-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">
+                               Already Secure / Installed
+                             </div>
+                             <p className="text-[9px] text-secondary font-black uppercase tracking-tighter opacity-50">Or visit on Chrome/Safari for prompt</p>
+                          </div>
+                        )}
+                     </div>
+                  </div>
+
+                  <div className="p-8 bg-blue-500/5 rounded-[2rem] border border-blue-500/10">
+                     <h4 className="text-[10px] font-black text-primary dark:text-dark-primary uppercase tracking-widest mb-4">iOS Installation Guide</h4>
+                     <div className="space-y-4">
+                        <p className="text-xs text-secondary dark:text-dark-secondary font-medium leading-relaxed">
+                           To install on iOS:
+                        </p>
+                        <ol className="text-xs text-secondary dark:text-dark-secondary font-medium space-y-3">
+                           <li className="flex gap-3">
+                              <span className="w-5 h-5 bg-white dark:bg-gray-800 rounded-md flex items-center justify-center font-black text-[9px] shadow-sm shrink-0">1</span>
+                              Tap the <span className="text-primary dark:text-dark-primary font-bold">Share</span> button at the bottom of Safari.
+                           </li>
+                           <li className="flex gap-3">
+                              <span className="w-5 h-5 bg-white dark:bg-gray-800 rounded-md flex items-center justify-center font-black text-[9px] shadow-sm shrink-0">2</span>
+                              Scroll down and select <span className="text-primary dark:text-dark-primary font-bold">"Add to Home Screen"</span>.
+                           </li>
+                           <li className="flex gap-3">
+                              <span className="w-5 h-5 bg-white dark:bg-gray-800 rounded-md flex items-center justify-center font-black text-[9px] shadow-sm shrink-0">3</span>
+                              Launch <span className="text-action font-black">Progress.</span> directly from your home screen.
+                           </li>
+                        </ol>
+                     </div>
+                  </div>
+
+                  <div className="pt-8 border-t border-gray-100 dark:border-gray-800">
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center text-secondary">
+                              <Info size={18} />
+                           </div>
+                           <div>
+                              <p className="font-black text-primary dark:text-dark-primary uppercase tracking-widest text-[10px]">Version Control</p>
+                              <p className="text-xs text-secondary font-medium lowercase">v2.4.0-stable</p>
+                           </div>
+                        </div>
+                        <p className="text-[10px] font-black text-secondary uppercase tracking-[3px] opacity-30">Evolution Matrix 01</p>
+                     </div>
+                  </div>
+               </div>
             </section>
           )}
         </div>

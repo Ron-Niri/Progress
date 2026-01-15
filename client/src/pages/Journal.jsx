@@ -8,7 +8,10 @@ import {
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 
+import { useProgressData } from '../context/ProgressContext';
+
 export default function Journal() {
+  const { journal: globalJournal, loading: globalLoading, refreshSilent } = useProgressData();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -18,19 +21,23 @@ export default function Journal() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchEntries();
-  }, []);
+    if (showModal) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+    return () => document.body.classList.remove('no-scroll');
+  }, [showModal]);
 
-  const fetchEntries = async () => {
-    try {
-      if (entries.length === 0) setLoading(true);
-      const res = await api.get('/journal');
-      setEntries(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
+  useEffect(() => {
+    if (!globalLoading && globalJournal) {
+      setEntries(globalJournal);
       setLoading(false);
     }
+  }, [globalJournal, globalLoading]);
+
+  const fetchEntries = async () => {
+    await refreshSilent();
   };
 
   const handleOpenModal = (entry = null) => {
@@ -265,7 +272,7 @@ export default function Journal() {
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-8 pt-4 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleCreate} className="p-8 pt-4 space-y-8 flex-1 overflow-y-auto custom-scrollbar modal-scroll safe-bottom">
                <div className="space-y-6">
                   <div className="space-y-2">
                      <label className="text-[10px] font-black text-secondary uppercase tracking-widest ml-1">Stream of Consciousness</label>

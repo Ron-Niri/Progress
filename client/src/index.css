@@ -6,7 +6,8 @@
 
 @layer base {
   body {
-    @apply bg-background text-primary font-sans antialiased transition-colors duration-200;
+    @apply bg-background text-primary font-sans antialiased transition-colors duration-200 overflow-x-hidden;
+    -webkit-tap-highlight-color: transparent;
   }
   .dark body {
     @apply bg-dark-background text-dark-primary;
@@ -16,5 +17,37 @@
   }
   .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
     @apply text-dark-primary;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 dark:bg-gray-800 rounded-full transition-colors;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-300 dark:bg-gray-700;
+  }
+
+  .modal-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Prevent background scroll when modal is open */
+  .no-scroll {
+    overflow: hidden !important;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
   }
 }

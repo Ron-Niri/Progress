@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: 'auto',
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
         manifest: {
           name: 'Progress',
@@ -23,6 +24,7 @@ export default defineConfig(({ mode }) => {
           theme_color: '#3B82F6',
           background_color: '#FBFBFA',
           display: 'standalone',
+          orientation: 'portrait',
           scope: '/',
           start_url: '/',
           icons: [
@@ -42,7 +44,42 @@ export default defineConfig(({ mode }) => {
               type: 'image/png',
               purpose: 'any maskable'
             }
+          ],
+          shortcuts: [
+            {
+              name: 'Habits',
+              url: '/habits',
+              icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+            },
+            {
+              name: 'Goals',
+              url: '/goals',
+              icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+            }
+          ],
+          categories: ['productivity', 'lifestyle']
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            }
           ]
+        },
+        devOptions: {
+          enabled: true
         }
       })
     ],

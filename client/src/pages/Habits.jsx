@@ -9,7 +9,10 @@ import {
 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 
+import { useProgressData } from '../context/ProgressContext';
+
 export default function Habits() {
+  const { habits: globalHabits, loading: globalLoading, refreshSilent } = useProgressData();
   const [habits, setHabits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -29,19 +32,23 @@ export default function Habits() {
   const [newHabit, setNewHabit] = useState(initialHabitState);
 
   useEffect(() => {
-    fetchHabits();
-  }, []);
+    if (showModal || showTemplatePicker) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+    return () => document.body.classList.remove('no-scroll');
+  }, [showModal, showTemplatePicker]);
 
-  const fetchHabits = async () => {
-    try {
-      if (habits.length === 0) setLoading(true);
-      const res = await api.get('/habits');
-      setHabits(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
+  useEffect(() => {
+    if (!globalLoading && globalHabits) {
+      setHabits(globalHabits);
       setLoading(false);
     }
+  }, [globalHabits, globalLoading]);
+
+  const fetchHabits = async () => {
+    await refreshSilent();
   };
 
   const handleOpenModal = (habit = null) => {
@@ -286,7 +293,7 @@ export default function Habits() {
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-8 pt-4 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleCreate} className="p-8 pt-4 space-y-8 flex-1 overflow-y-auto custom-scrollbar modal-scroll safe-bottom">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
